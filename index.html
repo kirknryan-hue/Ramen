@@ -583,36 +583,16 @@ input[type=range]:focus { border-color:transparent; box-shadow:none; }
     </div>
 
     <nav class="sidebar-nav">
-      <div class="nav-item active" onclick="nav('overview',this)">
-        <span class="nav-icon">📊</span>
-        <span class="nav-label">Dashboard</span>
-      </div>
-      <div class="nav-item" onclick="nav('accounts',this)">
-        <span class="nav-icon">🏦</span>
-        <span class="nav-label">Accounts</span>
-      </div>
-      <div class="nav-item" onclick="nav('bills',this)">
-        <span class="nav-icon">📋</span>
-        <span class="nav-label">Bills</span>
-      </div>
-      <div class="nav-item" onclick="nav('bigbuy',this)">
-        <span class="nav-icon">🛒</span>
-        <span class="nav-label">Big Buy</span>
-      </div>
-      <div class="nav-item" onclick="nav('goals',this)">
-        <span class="nav-icon">🎯</span>
-        <span class="nav-label">Goals</span>
-      </div>
-      <div class="nav-item" onclick="nav('debt',this)" id="nav-debt">
-        <span class="nav-icon">💳</span>
-        <span class="nav-label">Debt</span>
-      </div>
-    
-      <div class="nav-item" onclick="nav('settings',this)">
-        <span class="nav-icon">⚙️</span>
-        <span class="nav-label">Settings</span>
-      </div>
-</nav>
+      <div class="nav-item active" onclick="nav('overview',this)"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item" onclick="nav('accounts',this)"><span class="nav-icon">🏦</span><span class="nav-label">Accounts</span></div>
+      <div class="nav-item" onclick="nav('income',this)"><span class="nav-icon">💰</span><span class="nav-label">Income</span></div>
+      <div class="nav-item" onclick="nav('bills',this)"><span class="nav-icon">📋</span><span class="nav-label">Bills</span></div>
+      <div class="nav-item" onclick="nav('plans',this)"><span class="nav-icon">🎯</span><span class="nav-label">Plans</span></div>
+      <div class="nav-item" onclick="nav('debt',this)" id="nav-debt"><span class="nav-icon">💳</span><span class="nav-label">Debt Simulator</span></div>
+      <div class="nav-item" onclick="nav('calendar',this)"><span class="nav-icon">🗓️</span><span class="nav-label">Calendar</span></div>
+      <div class="nav-item" onclick="nav('settings',this)"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></div>
+
+    </nav>
 
     <div class="sidebar-footer">Don't be seasoning tap water.</div>
   </div>
@@ -639,7 +619,7 @@ input[type=range]:focus { border-color:transparent; box-shadow:none; }
           <div class="stat-value lime mono" id="ov-total">$0.00</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Daily Budget</div>
+          <div class="stat-label">Available Today</div>
           <div class="stat-value warn mono" id="ov-daily">$0.00</div>
           <div class="stat-sub" id="ov-days-label">over — days</div>
         </div>
@@ -652,7 +632,7 @@ input[type=range]:focus { border-color:transparent; box-shadow:none; }
 
       <div class="card">
         <div class="section-header">
-          <span class="section-title">Today's Damage</span>
+          <span class="section-title">Today's Spend</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:var(--text-3);margin-bottom:6px">
           <span>Spent</span>
@@ -669,6 +649,17 @@ input[type=range]:focus { border-color:transparent; box-shadow:none; }
         </div>
       </div>
 
+
+      <div class="grid-2" style="margin-top:12px">
+        <div class="card">
+          <div class="section-title" style="margin-bottom:12px">Bills coming up</div>
+          <div id="upcoming-bills" style="min-height:40px"></div>
+        </div>
+        <div class="card">
+          <div class="section-title" style="margin-bottom:12px">Next on your calendar</div>
+          <div id="upcoming-events" style="min-height:40px"></div>
+        </div>
+      </div>
       <div class="card" style="margin-top:12px">
         <div class="section-title" style="margin-bottom:14px">Setup</div>
         <div class="form-group">
@@ -717,11 +708,7 @@ input[type=range]:focus { border-color:transparent; box-shadow:none; }
     </div>
 
     <!-- ===== BIG BUY ===== -->
-    <div class="page" id="page-bigbuy">
-      <div class="page-header">
-        <h1 class="page-title">Big Buy</h1>
-      </div>
-      <div class="card">
+    <div class="card">
         <p style="color:var(--text-3);font-size:0.85rem;margin-bottom:18px">Emotionally approved. Let's see if you're financially cleared.</p>
         <div class="form-row">
           <div class="form-group">
@@ -755,7 +742,7 @@ input[type=range]:focus { border-color:transparent; box-shadow:none; }
           <div class="result-row"><span class="result-lbl">Price Tag</span><span class="result-val" id="bp-r-cost"></span></div>
           <div class="result-row"><span class="result-lbl">Days to Stack</span><span class="result-val" id="bp-r-days"></span></div>
           <div class="result-row"><span class="result-lbl">Save Per Day</span><span class="result-val warn" id="bp-r-perday"></span></div>
-          <div class="result-row"><span class="result-lbl">New Daily Budget</span><span class="result-val" id="bp-r-newdaily"></span></div>
+          <div class="result-row"><span class="result-lbl">New Available Today</span><span class="result-val" id="bp-r-newdaily"></span></div>
           <div class="result-row"><span class="result-lbl">Can You Afford It?</span><span class="result-val" id="bp-r-afford"></span></div>
         </div>
         <div id="bp-tip" class="tip-box"></div>
@@ -763,12 +750,7 @@ input[type=range]:focus { border-color:transparent; box-shadow:none; }
     </div>
 
     <!-- ===== GOALS ===== -->
-    <div class="page" id="page-goals">
-      <div class="page-header">
-        <h1 class="page-title">Goals</h1>
-        <button class="btn btn-lime" onclick="openModal('add-goal-modal')">+ Add</button>
-      </div>
-      <div id="goals-list">
+    <div id="goals-list">
         <div class="empty-state">
           <div class="empty-icon">🎯</div>
           <div class="empty-text">No goals. Goals don't fund themselves. Even $10 moves it. Add one.</div>
@@ -828,6 +810,145 @@ input[type=range]:focus { border-color:transparent; box-shadow:none; }
           </select>
         </div>
         <div class="tip-box"><strong>Mild</strong> still tells the truth. It just uses fewer words that would get you banned at a PTA meeting.</div>
+      </div>
+    </div>
+
+
+
+    <!-- ===== INCOME ===== -->
+    <div class="page" id="page-income">
+      <div class="page-header">
+        <h1 class="page-title">Income</h1>
+      </div>
+
+      <div class="card">
+        <div class="section-title" style="margin-bottom:14px">Pay Schedule</div>
+        <p style="color:var(--text-3);font-size:0.85rem;margin-bottom:14px">
+          Set your main paycheck so the daily budget can stop guessing.
+        </p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Net pay amount ($)</label>
+            <input type="number" id="pay-amount" placeholder="0.00" step="0.01" min="0">
+            <div class="err-msg" id="err-pay-amount">📛 Put the number you actually receive.</div>
+          </div>
+          <div class="form-group">
+            <label>Frequency</label>
+            <select id="pay-frequency">
+              <option value="weekly">Weekly</option>
+              <option value="biweekly">Bi-weekly</option>
+              <option value="semimonthly">Semi-monthly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Next payday</label>
+            <input type="date" id="pay-nextdate">
+            <div class="err-msg" id="err-pay-nextdate">📛 Pick the next payday.</div>
+          </div>
+          <div class="form-group" style="display:flex;align-items:flex-end">
+            <button class="btn btn-lime btn-full" onclick="savePaySchedule()">Save Pay Schedule</button>
+          </div>
+        </div>
+
+        <div class="tip-box" id="income-summary">
+          <strong>Monthly income estimate:</strong> <span class="mono" id="income-monthly-est">$0.00</span>
+          <div style="margin-top:6px;color:var(--text-3);font-size:0.78rem">Used for dashboard context and “month view”. Your accounts are still the real-time truth.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PLANS ===== -->
+    <div class="page" id="page-plans">
+      <div class="page-header">
+        <h1 class="page-title">Plans</h1>
+        <div class="btn-row" style="margin:0">
+          <button class="btn btn-ghost" id="plans-tab-buy" onclick="showPlansTab('buy')">Purchase Check</button>
+          <button class="btn btn-ghost" id="plans-tab-goals" onclick="showPlansTab('goals')">Goals</button>
+        </div>
+      </div>
+
+      <!-- Purchase Check -->
+      <div id="plans-buy">
+        <div class="card">
+          <p style="color:var(--text-3);font-size:0.85rem;margin-bottom:18px">Run the numbers before you run your card.</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label>What is it?</label>
+              <input type="text" id="bp-name" placeholder="Shoes, laptop, tires...">
+              <div class="err-msg" id="err-bp-name">📛 Give it a name.</div>
+            </div>
+            <div class="form-group">
+              <label>Cost ($)</label>
+              <input type="number" id="bp-cost" placeholder="0.00" min="0" step="0.01">
+              <div class="err-msg" id="err-bp-cost">📛 Real number.</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Days to save</label>
+              <input type="number" id="bp-days" placeholder="e.g. 30" min="1">
+              <div class="err-msg" id="err-bp-days">📛 Numbers only.</div>
+            </div>
+            <div class="form-group">
+              <label>Custom daily save (optional)</label>
+              <input type="number" id="bp-daily-save" placeholder="auto-calc" min="0" step="0.01">
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-warn" onclick="calcPurchase()">Run the Numbers</button>
+            <button class="btn btn-lime" id="bp-make-goal" style="display:none" onclick="makeGoalFromPurchase()">Turn this into a Goal</button>
+          </div>
+        </div>
+
+        <div id="bp-result" style="display:none">
+          <div class="result-box" style="margin-top:14px">
+            <div style="font-weight:800;font-size:1rem;margin-bottom:12px" id="bp-item-title"></div>
+            <div class="result-row"><span class="result-lbl">Price Tag</span><span class="result-val" id="bp-r-cost"></span></div>
+            <div class="result-row"><span class="result-lbl">Days to Stack</span><span class="result-val" id="bp-r-days"></span></div>
+            <div class="result-row"><span class="result-lbl">Save Per Day</span><span class="result-val warn" id="bp-r-perday"></span></div>
+            <div class="result-row"><span class="result-lbl">New Available Today</span><span class="result-val" id="bp-r-newdaily"></span></div>
+            <div class="result-row"><span class="result-lbl">Can You Afford It?</span><span class="result-val" id="bp-r-afford"></span></div>
+          </div>
+          <div id="bp-tip" class="tip-box"></div>
+        </div>
+      </div>
+
+      <!-- Goals -->
+      <div id="plans-goals" style="display:none">
+        <div class="page-header" style="margin:0 0 14px 0">
+          <h2 class="page-title" style="font-size:1.1rem">Goals</h2>
+          <button class="btn btn-lime" onclick="openModal('add-goal-modal')">+ Add</button>
+        </div>
+        <div id="goals-list">
+          <div class="empty-state">
+            <div class="empty-icon">🎯</div>
+            <div class="empty-text">No goals yet. Add one and fund it like you mean it.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CALENDAR ===== -->
+    <div class="page" id="page-calendar">
+      <div class="page-header">
+        <h1 class="page-title">Calendar</h1>
+        <button class="btn btn-lime" onclick="openModal('add-event-modal')">+ Add</button>
+      </div>
+
+      <div class="card">
+        <div class="section-title" style="margin-bottom:12px">Upcoming</div>
+        <div id="events-list">
+          <div class="empty-state">
+            <div class="empty-icon">🗓️</div>
+            <div class="empty-text">No events. Life is suspiciously quiet. Add your appointments and work shifts.</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1166,6 +1287,49 @@ input[type=range]:focus { border-color:transparent; box-shadow:none; }
   </div>
 </div>
 
+
+<!-- Add Event -->
+<div class="modal-overlay" id="add-event-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Add Calendar Item</span>
+      <button class="modal-close" onclick="closeModal('add-event-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Type</label>
+        <select id="event-type">
+          <option value="appointment">📌 Appointment</option>
+          <option value="work">🧰 Work</option>
+          <option value="task">✅ Task</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="event-date">
+        <div class="err-msg" id="err-event-date">📛 Pick a date.</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Time (optional)</label>
+        <input type="time" id="event-time">
+      </div>
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="event-title" placeholder="Dentist, shift, court, whatever...">
+        <div class="err-msg" id="err-event-title">📛 Give it a title.</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes (optional)</label>
+      <input type="text" id="event-notes" placeholder="address, contact, reminder...">
+    </div>
+    <button class="btn btn-lime" onclick="addEvent()">Add</button>
+  </div>
+</div>
+
+
 <!-- ============================================================ JAVASCRIPT -->
 <script>
 
@@ -1206,10 +1370,11 @@ function closeSidebar() {
 
 // ===== STATE =====
 let state = {
-  accounts:[], days:30, spentToday:0, goals:[], bills:[], debts:[],
+  accounts:[], days:30, spentToday:0, carryover:0,
+  goals:[], bills:[], debts:[], events:[],
+  pay:{ amount:0, frequency:'biweekly', nextDate:'' },
   editAccId:null, addToGoalId:null, editBillId:null, editDebtId:null,
   theme:'ramen',
-  roastLevel:'savage',
 };
 function load() {
   const s = localStorage.getItem('budgetApp_v3');
@@ -1229,16 +1394,11 @@ function setTheme(themeKey){
   applyTheme(themeKey);
   save();
 }
-function setRoastLevel(level){
-  state.roastLevel = level;
-  save();
-  renderOverview(); // update banner tone immediately
-}
 function initSettingsUI(){
   const themeSel = document.getElementById('theme-select');
   if(themeSel) themeSel.value = state.theme || 'ramen';
   const roastSel = document.getElementById('roast-select');
-  if(roastSel) roastSel.value = state.roastLevel || 'savage';
+  if(roastSel) roastSel.value = 0 || 'savage';
 }
 
 // ===== LOOKUPS =====
@@ -1264,13 +1424,50 @@ function monthlyBillsTotal() {
   },0);
 }
 function spendableBalance() { return Math.max(totalBalance()-monthlyBillsTotal(),0); }
-function dailyBudget()      { return spendableBalance()/(parseInt(state.days)||1); }
+
+
+function daysToPayday() {
+  if(state.pay && state.pay.nextDate){
+    const now=new Date(); now.setHours(0,0,0,0);
+    const pd=new Date(state.pay.nextDate+'T00:00:00');
+    const diff=Math.ceil((pd-now)/(1000*60*60*24));
+    return diff>0?diff:0;
+  }
+  return parseInt(state.days)||30;
+}
+function monthlyIncomeEstimate() {
+  const amt=parseFloat(state.pay?.amount)||0;
+  const freq=state.pay?.frequency||'biweekly';
+  if(freq==='weekly') return amt*4.33;
+  if(freq==='biweekly') return amt*2.17;
+  if(freq==='semimonthly') return amt*2;
+  if(freq==='monthly') return amt;
+  return 0;
+}
+function expectedIncomeBeforePayday() {
+  // simple: assume one paycheck hits on next payday if it's in the future
+  const d=daysToPayday();
+  if(state.pay && state.pay.nextDate && d>0) return parseFloat(state.pay.amount)||0;
+  return 0;
+}
+function dailyBudget() {
+  const d=daysToPayday()||1;
+  const base = spendableBalance() + expectedIncomeBeforePayday();
+  return base / d;
+}
+function availableToday() {
+  return dailyBudget() + (parseFloat(state.carryover)||0);
+}
+function remainingToday() {
+  return availableToday() - (parseFloat(state.spentToday)||0);
+}
+
 function fmt(n)             { return '$'+(parseFloat(n)||0).toFixed(2); }
 function esc(s)             { const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
 
 // ===== BANNER =====
 function getHumor() {
-  const mild = (state.roastLevel==='mild');
+  const mild = (0==='mild');
   const total=totalBalance(), daily=dailyBudget(), bills=monthlyBillsTotal(), spent=state.spentToday;
   if(total===0) return {cls:'banner-warn', msg:"⚠️ Balance is $0.00. Add your accounts. Ramen can't help you if you won't enter numbers."};
   if(daily<3)   return {cls:'banner-bad',  msg:"🍜 We are in Ramen territory. Literally. "+fmt(daily)+"/day. Cut something now. This is real life."};
@@ -1291,26 +1488,45 @@ function setError(id,show) {
 }
 
 // ===== RENDER =====
+
+
 function renderOverview() {
-  const total=totalBalance(), daily=dailyBudget(), spendable=spendableBalance();
-  const humor=getHumor();
-  document.getElementById('ov-total').textContent=fmt(total);
-  document.getElementById('ov-daily').textContent=fmt(daily);
-  document.getElementById('ov-days-label').textContent=`over ${state.days||'—'} days`;
-  document.getElementById('ov-after-bills').textContent=fmt(spendable);
-  document.getElementById('ov-daily-label').textContent=fmt(daily);
-  document.getElementById('ov-spent-amt').textContent=fmt(state.spentToday);
-  const banner=document.getElementById('humor-banner');
-  banner.textContent=humor.msg; banner.className='banner '+humor.cls;
-  const pct=daily>0?Math.min((state.spentToday/daily)*100,100):0;
-  const bar=document.getElementById('spend-bar');
-  bar.style.width=pct+'%';
-  bar.style.background=pct>90?'var(--ember)':pct>65?'var(--warn)':'var(--lime)';
-  const badge=document.getElementById('ov-today-badge');
-  if(state.spentToday>daily){badge.textContent='BLOWN IT';badge.className='badge badge-ember';}
-  else if(pct>70){badge.textContent='CLOSE';badge.className='badge badge-warn';}
-  else{badge.textContent='ON TRACK';badge.className='badge badge-lime';}
+  const total = totalBalance();
+  const avail = availableToday();
+  const remain = remainingToday();
+  const spendable = spendableBalance();
+  const dPay = daysToPayday();
+  const humor = getHumor();
+
+  document.getElementById('ov-total').textContent = fmt(total);
+  document.getElementById('ov-daily').textContent = fmt(avail);
+  const lbl = (state.pay && state.pay.nextDate) ? `until payday (${dPay} day${dPay===1?'':'s'})` : `over ${state.days||'—'} days`;
+  document.getElementById('ov-days-label').textContent = lbl;
+  document.getElementById('ov-after-bills').textContent = fmt(spendable);
+
+  const banner = document.getElementById('ov-banner');
+  banner.innerHTML = humor.msg;
+  banner.className = 'banner ' + humor.tone;
+
+  // Today's spend widget
+  document.getElementById('ov-daily-label').textContent = fmt(avail);
+  document.getElementById('ov-spent-amt').textContent = fmt(state.spentToday||0);
+  document.getElementById('td-remaining').textContent = fmt(remain);
+  document.getElementById('td-carry').textContent = fmt(state.carryover||0);
+
+  const pct = avail>0 ? Math.min(100, Math.max(0, (state.spentToday||0)/avail*100)) : 0;
+  document.getElementById('spend-bar').style.width = pct + '%';
+  document.getElementById('spend-bar').style.background = remain>=0 ? 'var(--lime)' : 'var(--ember)';
+
+  renderUpcomingBillsWidget();
+  renderUpcomingEventsWidget();
+
+  const badge=document.getElementById('ov-badge');
+  if(remain>=0) { badge.textContent='ON TRACK'; badge.className='badge ok'; }
+  else { badge.textContent='OVER'; badge.className='badge warn'; }
 }
+
+
 
 function renderAccounts() {
   const list=document.getElementById('accounts-list');
@@ -1339,45 +1555,61 @@ function renderAccounts() {
   }).join('');
 }
 
+
+function monthKey(d=new Date()){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  return `${y}-${m}`;
+}
+function isBillPaidThisMonth(b){
+  return (b.paidMonth||'') === monthKey();
+}
+function togglePaidBill(id){
+  const b = state.bills.find(x=>x.id===id);
+  if(!b) return;
+  if(isBillPaidThisMonth(b)) b.paidMonth = '';
+  else b.paidMonth = monthKey();
+  save(); renderBills(); renderOverview();
+}
 function renderBills() {
-  const monthly=monthlyBillsTotal();
-  const autopayTotal=state.bills.filter(b=>b.autopay).reduce((s,b)=>s+(parseFloat(b.amount)||0),0);
-  const today=new Date().getDate();
-  const dueSoon=state.bills.filter(b=>b.dueday&&(b.dueday-today)>=0&&(b.dueday-today)<=7).length;
-  document.getElementById('bills-monthly-total').textContent=fmt(monthly);
-  document.getElementById('bills-autopay-total').textContent=fmt(autopayTotal);
-  document.getElementById('bills-due-count').textContent=dueSoon;
   const list=document.getElementById('bills-list');
+  if(!list) return;
   if(!state.bills.length){
-    list.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No bills? Either you\'re living rent-free or you\'re in denial. Add them. All of them.</div></div>';
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No bills yet. Add them so the dashboard can stop lying.</div></div>`;
     return;
   }
-  const sorted=state.bills.map((b,i)=>({...b,_i:i})).sort((a,b)=>(a.dueday||99)-(b.dueday||99));
-  list.innerHTML=sorted.map(b=>{
-    const icon=catIcons[b.category]||'📦';
-    const accName=b.autopay&&b.autopayAccount!==''&&state.accounts[parseInt(b.autopayAccount)]?state.accounts[parseInt(b.autopayAccount)].name:null;
-    const daysUntil=b.dueday?b.dueday-today:null;
-    let dueBadge='';
-    if(daysUntil!==null){
-      if(daysUntil<0) dueBadge='<span class="badge badge-ember">OVERDUE</span>';
-      else if(daysUntil<=3) dueBadge=`<span class="badge badge-ember">DUE IN ${daysUntil}d</span>`;
-      else if(daysUntil<=7) dueBadge=`<span class="badge badge-warn">DUE IN ${daysUntil}d</span>`;
-      else dueBadge=`<span class="badge badge-cream">Day ${b.dueday}</span>`;
-    }
-    return `<div class="item">
-      <div class="item-icon" style="background:rgba(232,168,74,0.1)">${icon}</div>
-      <div class="item-body">
-        <div class="item-name">${esc(b.name)} ${dueBadge}</div>
-        <div class="item-sub">${b.frequency}${b.autopay?` · <span class="autopay-tag">⚡ Autopay${accName?': '+accName:''}</span>`:''}${b.notes?' · '+esc(b.notes):''}</div>
+  const today=new Date();
+  const day=today.getDate();
+  const mk=monthKey(today);
+
+  const bills=[...state.bills].sort((a,b)=> (a.dueday||99)-(b.dueday||99));
+  list.innerHTML = bills.map(b=>{
+    const paid = (b.paidMonth||'')===mk;
+    const due = parseInt(b.dueday)||1;
+    const overdue = !paid && due < day;
+    const dueIn = !paid ? (due-day) : null;
+    const status = paid ? `<span class="pill ok">PAID</span>` :
+      overdue ? `<span class="pill warn">OVERDUE</span>` :
+      (dueIn===0? `<span class="pill warn">DUE TODAY</span>` : `<span class="pill">DUE IN ${dueIn}d</span>`);
+    return `
+      <div class="list-item">
+        <div class="li-main">
+          <div class="li-title">${esc(b.name)} ${status}</div>
+          <div class="li-sub">${esc(b.category||'General')} • Due day ${due} • ${esc(b.frequency||'monthly')}</div>
+        </div>
+        <div class="li-right">
+          <div class="li-amt mono">${fmt(b.amount||0)}</div>
+          <div class="btn-row" style="justify-content:flex-end;margin-top:8px">
+            <button class="btn btn-ghost" onclick="togglePaidBill('${b.id}')">${paid?'Unmark':'Mark Paid'}</button>
+            <button class="btn btn-ghost" onclick="editBill('${b.id}')">Edit</button>
+            <button class="btn btn-warn" onclick="deleteBill('${b.id}')">Delete</button>
+          </div>
+        </div>
       </div>
-      <div class="item-value ember mono">${fmt(b.amount)}</div>
-      <div class="item-actions">
-        <button class="icon-btn" onclick="openEditBill(${b._i})">✏️</button>
-        <button class="icon-btn del" onclick="deleteBill(${b._i})">🗑</button>
-      </div>
-    </div>`;
+    `;
   }).join('');
 }
+
 
 function renderGoals() {
   const list=document.getElementById('goals-list');
@@ -1465,9 +1697,11 @@ function initTheme(){
 function renderAll() {
   safe(renderOverview);
   safe(renderAccounts);
+  safe(renderIncome);
   safe(renderBills);
   safe(renderGoals);
   safe(renderDebt);
+  safe(renderCalendar);
   safe(renderSettings);
 }
 
@@ -1488,8 +1722,11 @@ function logSpend() {
   save(); renderOverview();
 }
 function resetDay() {
-  if(!confirm("Reset today's tracker? New day, clean slate. Don't make it a habit.")) return;
-  state.spentToday=0; save(); renderOverview();
+  if(!confirm("Start a new day? This rolls any leftover (or overspend) into tomorrow.")) return;
+  const rem = remainingToday();
+  state.carryover = isFinite(rem)? rem : 0;
+  state.spentToday = 0;
+  save(); renderOverview();
 }
 
 // ===== ACCOUNTS =====
@@ -1561,7 +1798,7 @@ function addBill() {
   setError('bill-name',nameErr); setError('bill-amount',amtErr);
   setError('bill-dueday',dueErr); setError('bill-autopay-account',apErr);
   if(nameErr||amtErr||dueErr||apErr) return;
-  state.bills.push({name,amount,frequency,dueday,category,autopay,autopayAccount,notes});
+  state.bills.push({id:uid(), paidMonth:"", name,amount,frequency,dueday,category,autopay,autopayAccount,notes});
   ['bill-name','bill-amount','bill-dueday','bill-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('bill-autopay').checked=false;
   document.getElementById('autopay-acc-section').style.display='none';
@@ -1671,6 +1908,8 @@ function calcPurchase() {
   else if(newDaily<5) tip=`<strong>😬 Emotionally approved. Barely financially cleared.</strong> You'd have ${fmt(newDaily)}/day left. That's surviving on prayers. Push the save window out.`;
   else tip=`<strong>✅ Cleared.</strong> Stack ${fmt(savePerDay)}/day and you'll have it in ${daysNeeded} days. New daily budget: ${fmt(newDaily)}. Doable. Don't blow it on something else before then.`;
   document.getElementById('bp-tip').innerHTML=tip;
+  state.lastPurchase = { name, cost, days, perDay: savePerDay };
+  const btn=document.getElementById('bp-make-goal'); if(btn) btn.style.display='inline-flex';
   document.getElementById('bp-result').style.display='block';
 }
 
@@ -1936,7 +2175,153 @@ function saveEditDebt() {
 
 load();
 initTheme();
+applyTheme(state.theme|
+
+function savePaySchedule(){
+  hideErr('err-pay-amount'); hideErr('err-pay-nextdate');
+  const amt=parseFloat(val('pay-amount'));
+  const freq=val('pay-frequency');
+  const nd=val('pay-nextdate');
+  let ok=true;
+  if(!(amt>=0)){ showErr('err-pay-amount'); ok=false; }
+  if(!nd){ showErr('err-pay-nextdate'); ok=false; }
+  if(!ok) return;
+  state.pay = { amount: amt, frequency: freq, nextDate: nd };
+  save(); renderIncome(); renderOverview();
+}
+function renderIncome(){
+  const a=document.getElementById('pay-amount'); if(!a) return;
+  a.value = state.pay?.amount ? String(state.pay.amount) : '';
+  document.getElementById('pay-frequency').value = state.pay?.frequency || 'biweekly';
+  document.getElementById('pay-nextdate').value = state.pay?.nextDate || '';
+  document.getElementById('income-monthly-est').textContent = fmt(monthlyIncomeEstimate());
+}
+function addEvent(){
+  hideErr('err-event-date'); hideErr('err-event-title');
+  const type=val('event-type');
+  const date=val('event-date');
+  const time=val('event-time');
+  const title=val('event-title').trim();
+  const notes=val('event-notes').trim();
+  let ok=true;
+  if(!date){ showErr('err-event-date'); ok=false; }
+  if(!title){ showErr('err-event-title'); ok=false; }
+  if(!ok) return;
+  state.events.push({ id:uid(), type, date, time, title, notes, done:false });
+  save();
+  // clear
+  setVal('event-time',''); setVal('event-title',''); setVal('event-notes','');
+  closeModal('add-event-modal');
+  renderCalendar(); renderOverview();
+}
+function deleteEvent(id){
+  if(!confirm("Delete this calendar item?")) return;
+  state.events = state.events.filter(e=>e.id!==id);
+  save(); renderCalendar(); renderOverview();
+}
+function toggleEventDone(id){
+  const e=state.events.find(x=>x.id===id); if(!e) return;
+  e.done = !e.done;
+  save(); renderCalendar(); renderOverview();
+}
+function upcomingEvents(){
+  const today=new Date(); today.setHours(0,0,0,0);
+  return [...state.events]
+    .filter(e=>!e.done)
+    .map(e=>({ ...e, _d:new Date(e.date+'T00:00:00') }))
+    .filter(e=>!isNaN(e._d))
+    .sort((a,b)=>a._d-b._d || String(a.time||'').localeCompare(String(b.time||'')))
+    .slice(0,20);
+}
+function renderCalendar(){
+  const list=document.getElementById('events-list');
+  if(!list) return;
+  const ev=upcomingEvents();
+  if(!ev.length){
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🗓️</div><div class="empty-text">No events. Add appointments, tasks, or work shifts.</div></div>`;
+    return;
+  }
+  list.innerHTML = ev.map(e=>{
+    const t = e.time ? ` • ${esc(e.time)}` : '';
+    const tag = e.type==='appointment'?'📌':(e.type==='work'?'🧰':'✅');
+    return `
+      <div class="list-item">
+        <div class="li-main">
+          <div class="li-title">${tag} ${esc(e.title)}</div>
+          <div class="li-sub">${esc(e.date)}${t}${e.notes?` • ${esc(e.notes)}`:''}</div>
+        </div>
+        <div class="li-right">
+          <div class="btn-row" style="justify-content:flex-end;margin:0">
+            <button class="btn btn-ghost" onclick="toggleEventDone('${e.id}')">${e.done?'Undone':'Done'}</button>
+            <button class="btn btn-warn" onclick="deleteEvent('${e.id}')">Delete</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+function renderUpcomingEventsWidget(){
+  const box=document.getElementById('upcoming-events'); if(!box) return;
+  const ev=upcomingEvents().slice(0,3);
+  if(!ev.length){ box.innerHTML = `<div class="muted">Nothing scheduled.</div>`; return; }
+  box.innerHTML = ev.map(e=>{
+    const tag = e.type==='appointment'?'📌':(e.type==='work'?'🧰':'✅');
+    return `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)">
+      <div style="min-width:0"><div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${tag} ${esc(e.title)}</div>
+      <div style="color:var(--text-3);font-size:0.78rem">${esc(e.date)}${e.time?` • ${esc(e.time)}`:''}</div></div>
+    </div>`;
+  }).join('');
+}
+function renderUpcomingBillsWidget(){
+  const box=document.getElementById('upcoming-bills'); if(!box) return;
+  const today=new Date(); const day=today.getDate(); const mk=monthKey(today);
+  const dueSoon = [...state.bills]
+    .filter(b=> (b.paidMonth||'')!==mk)
+    .map(b=>({ ...b, due:parseInt(b.dueday)||1 }))
+    .sort((a,b)=>a.due-b.due)
+    .slice(0,5);
+  if(!dueSoon.length){ box.innerHTML = `<div class="muted">No bills listed.</div>`; return; }
+  box.innerHTML = dueSoon.map(b=>{
+    const overdue = b.due < day;
+    const label = overdue ? 'OVERDUE' : (b.due===day?'DUE TODAY':`DUE DAY ${b.due}`);
+    return `<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)">
+      <div style="min-width:0">
+        <div style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.name)}</div>
+        <div style="color:var(--text-3);font-size:0.78rem">${esc(b.category||'General')} • <span class="${overdue?'warn-text':''}">${label}</span></div>
+      </div>
+      <div class="mono" style="font-weight:800">${fmt(b.amount||0)}</div>
+    </div>`;
+  }).join('');
+}
+function showPlansTab(which){
+  const buy=document.getElementById('plans-buy');
+  const goals=document.getElementById('plans-goals');
+  const tb=document.getElementById('plans-tab-buy');
+  const tg=document.getElementById('plans-tab-goals');
+  if(!buy||!goals) return;
+  const isBuy = which==='buy';
+  buy.style.display = isBuy ? '' : 'none';
+  goals.style.display = isBuy ? 'none' : '';
+  tb.classList.toggle('active', isBuy);
+  tg.classList.toggle('active', !isBuy);
+}
+function makeGoalFromPurchase(){
+  if(!state.lastPurchase) return;
+  const { name, cost, days, perDay } = state.lastPurchase;
+  // open goal modal and prefill
+  openModal('add-goal-modal');
+  setVal('goal-name', name);
+  setVal('goal-target', String(cost));
+  setVal('goal-days', String(days||''));
+  setVal('goal-daily', perDay ? String(perDay) : '');
+}
+
+load();
+initTheme();
 applyTheme(state.theme||'ramen');
+renderAll();
+showPlansTab('buy');
+
 </script>
 </body>
 </html>
