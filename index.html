@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ramen — Know Your Numbers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN TOKENS — pulled from logo: charcoal bg + cream
+   Two accent colors only: --lime (positive) and --ember (negative)
+   Everything else is tonal grays
+   ============================================================ */
+:root {
+  /* Base palette — logo colors */
+  --bg:        #2C2C2A;   /* logo background charcoal */
+  --bg2:       #242422;
+  --bg3:       #1E1E1C;
+  --surface:   #343430;
+  --surface2:  #3C3C38;
+  --cream:     #F0ECD8;   /* logo mark color */
+  --cream-dim: rgba(240,236,216,0.55);
+  --cream-faint: rgba(240,236,216,0.08);
+
+  /* Two accent colors — that's it */
+  --lime:      #C8E06B;   /* positive / money / good */
+  --lime-dim:  rgba(200,224,107,0.12);
+  --ember:     #E8644A;   /* negative / debt / danger */
+  --ember-dim: rgba(232,100,74,0.12);
+  --warn:      #E8A84A;   /* caution */
+  --warn-dim:  rgba(232,168,74,0.12);
+
+  /* Text */
+  --text:      #F0ECD8;
+  --text-2:    rgba(240,236,216,0.65);
+  --text-3:    rgba(240,236,216,0.35);
+  --border:    rgba(240,236,216,0.08);
+  --border2:   rgba(240,236,216,0.14);
+
+  /* Sidebar */
+  --sidebar-w: 220px;
+
+  /* Type */
+  font-family: 'DM Sans', sans-serif;
+}
+
+
+
+
+
+/* ===== THEME MODES + ACCENTS (simple, reliable) ===== */
+:root[data-mode="light"]{
+  --bg:#F6F3EA; --bg2:#FFFFFF; --bg3:#F2EFE6;
+  --surface:#FFFFFF; --surface2:#F7F4EC;
+  --text:#1E1E1C; --text-2:rgba(30,30,28,0.70); --text-3:rgba(30,30,28,0.45);
+  --border:rgba(30,30,28,0.10); --border2:rgba(30,30,28,0.18);
+  --cream:#1E1E1C; --cream-dim:rgba(30,30,28,0.7); --cream-faint:rgba(30,30,28,0.06);
+}
+:root[data-accent="lime"]{ --lime:#C8E06B; }
+:root[data-accent="cyan"]{ --lime:#66E3FF; }
+:root[data-accent="violet"]{ --lime:#B48CFF; }
+:root[data-accent="amber"]{ --lime:#FFCF66; }
+
+/* ============================================================ THEMES (Settings) */
+body.theme-ramen { /* default, uses :root values */ }
+body.theme-neon {
+  --bg:#14131A; --bg2:#0F0E14; --bg3:#0B0A10;
+  --surface:#1C1A24; --surface2:#252336;
+  --cream:#F7F1FF; --text:#F7F1FF;
+  --lime:#50FA7B; --ember:#FF5555; --warn:#F1FA8C;
+}
+body.theme-ice {
+  --bg:#0E1726; --bg2:#0B1320; --bg3:#070E18;
+  --surface:#101E33; --surface2:#142844;
+  --cream:#EAF4FF; --text:#EAF4FF;
+  --lime:#4DE3D1; --ember:#FF6B7A; --warn:#FFD166;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; }
+body { background:var(--bg3); color:var(--text); overflow-x:hidden; }
+
+/* ============================================================ LANDING */
+#landing {
+  position:fixed; inset:0; z-index:999;
+  background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  animation: landingFade 0.4s ease forwards;
+  animation-play-state: paused;
+}
+#landing.exit { animation: landingExit 0.5s ease forwards; pointer-events:none; }
+@keyframes landingExit {
+  to { opacity:0; transform:scale(1.03); }
+}
+
+.landing-logo {
+  width:180px; margin-bottom:32px;
+  animation: logoIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.1s both;
+}
+@keyframes logoIn {
+  from { opacity:0; transform:translateY(24px) scale(0.92); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.landing-tagline {
+  font-size:0.95rem; color:var(--text-2); letter-spacing:0.04em;
+  margin-bottom:52px; font-weight:400;
+  animation: fadeUp 0.7s ease 0.35s both;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.landing-btn {
+  background:var(--cream); color:var(--bg3);
+  border:none; border-radius:100px;
+  padding:16px 44px; font-size:1rem; font-weight:700;
+  font-family:'DM Sans',sans-serif;
+  cursor:pointer; letter-spacing:0.02em;
+  transition:transform 0.15s, box-shadow 0.15s;
+  animation: fadeUp 0.7s ease 0.5s both;
+}
+.landing-btn:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(240,236,216,0.18); }
+.landing-btn:active { transform:scale(0.97); }
+
+/* ============================================================ APP SHELL */
+#app { display:none; min-height:100vh; }
+#app.visible { display:flex; }
+
+/* ============================================================ SIDEBAR */
+.sidebar {
+  width:var(--sidebar-w); flex-shrink:0;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+  position:fixed; top:0; left:0; bottom:0; z-index:50;
+  transition:transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+.sidebar-logo {
+  padding:28px 20px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+.sidebar-logo img { width:32px; }
+.sidebar-logo-text { font-size:1.1rem; font-weight:800; color:var(--cream); letter-spacing:-0.01em; }
+
+.sidebar-nav { flex:1; padding:12px 10px; overflow-y:auto; }
+.nav-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:10px;
+  cursor:pointer; margin-bottom:2px;
+  color:var(--text-2); font-size:0.9rem; font-weight:500;
+  transition:background 0.15s, color 0.15s;
+  border:1px solid transparent;
+}
+.nav-item:hover { background:var(--cream-faint); color:var(--text); }
+.nav-item.active {
+  background:var(--cream-faint);
+  color:var(--cream); font-weight:700;
+  border-color:var(--border2);
+}
+.nav-icon { font-size:1rem; width:20px; text-align:center; flex-shrink:0; }
+.nav-label { flex:1; }
+.nav-badge {
+  font-size:0.65rem; font-weight:800; padding:2px 7px;
+  border-radius:20px; background:var(--ember); color:#fff;
+}
+
+.sidebar-footer {
+  padding:14px 10px;
+  border-top:1px solid var(--border);
+  font-size:0.72rem; color:var(--text-3);
+  text-align:center;
+}
+
+/* Mobile hamburger */
+.hamburger {
+  display:none; position:fixed; top:16px; left:16px; z-index:200;
+  width:40px; height:40px; border-radius:10px;
+  background:var(--surface); border:1px solid var(--border2);
+  align-items:center; justify-content:center;
+  cursor:pointer; font-size:1.1rem; color:var(--text);
+}
+.sidebar-overlay {
+  display:none; position:fixed; inset:0; z-index:49;
+  background:rgba(0,0,0,0.6);
+}
+
+/* ============================================================ MAIN CONTENT */
+.main {
+  margin-left:var(--sidebar-w);
+  flex:1; min-height:100vh;
+  padding:32px 28px;
+  max-width:860px;
+}
+
+.page { display:none; }
+.page.active { display:block; }
+
+.page-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:24px; flex-wrap:wrap; gap:12px;
+}
+.page-title { font-size:1.5rem; font-weight:800; color:var(--text); }
+
+/* ============================================================ CARDS */
+.card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px; padding:20px;
+}
+.card + .card { margin-top:12px; }
+
+.stat-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px; }
+.stat-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:18px 16px;
+}
+.stat-label {
+  font-size:0.7rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:0.08em; color:var(--text-3); margin-bottom:8px;
+}
+.stat-value { font-size:1.9rem; font-weight:800; line-height:1; }
+.stat-sub { font-size:0.72rem; color:var(--text-3); margin-top:4px; }
+.lime { color:var(--lime); }
+.ember { color:var(--ember); }
+.warn { color:var(--warn); }
+.cream { color:var(--cream); }
+
+/* ============================================================ BANNER */
+.banner {
+  border-radius:12px; padding:13px 16px;
+  font-size:0.87rem; font-weight:600; line-height:1.5;
+  margin-bottom:16px; border-left:3px solid;
+}
+.banner-ok   { background:var(--lime-dim);  border-color:var(--lime);  color:var(--lime); }
+.banner-warn { background:var(--warn-dim);  border-color:var(--warn);  color:var(--warn); }
+.banner-bad  { background:var(--ember-dim); border-color:var(--ember); color:var(--ember); }
+
+/* ============================================================ SPEND BAR */
+.bar-wrap { background:var(--bg3); border-radius:8px; height:10px; overflow:hidden; margin:10px 0; }
+.bar-fill { height:100%; border-radius:8px; transition:width 0.5s ease; }
+
+/* ============================================================ SECTION HEADER */
+.section-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px;
+}
+.section-title { font-size:1rem; font-weight:700; color:var(--text); }
+
+/* ============================================================ BUTTONS — never full width by default */
+.btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:10px 18px; border:none; border-radius:10px;
+  font-size:0.88rem; font-weight:700; font-family:'DM Sans',sans-serif;
+  cursor:pointer; transition:transform 0.1s, opacity 0.15s; white-space:nowrap;
+}
+.btn:hover { opacity:0.88; }
+.btn:active { transform:scale(0.97); }
+
+.btn-cream  { background:var(--cream); color:var(--bg3); }
+.btn-lime   { background:var(--lime);  color:var(--bg3); }
+.btn-ember  { background:var(--ember); color:#fff; }
+.btn-warn   { background:var(--warn);  color:var(--bg3); }
+.btn-ghost  { background:var(--surface2); color:var(--text-2); border:1px solid var(--border2); }
+.btn-ghost-ember { background:transparent; color:var(--ember); border:1px solid var(--ember); }
+
+/* Full-width only when explicitly needed */
+.btn-full { width:100%; justify-content:center; padding:13px 20px; font-size:0.95rem; }
+
+/* Button row — auto wraps, left-aligned */
+.btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+
+/* ============================================================ ITEMS (accounts, bills, debts) */
+.item {
+  display:flex; align-items:center; gap:12px;
+  padding:14px; background:var(--surface);
+  border:1px solid var(--border); border-radius:12px;
+  margin-bottom:8px; transition:border-color 0.2s;
+}
+.item:hover { border-color:var(--border2); }
+.item-icon {
+  width:40px; height:40px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.15rem; flex-shrink:0;
+}
+.item-body { flex:1; min-width:0; }
+.item-name { font-weight:700; font-size:0.92rem; }
+.item-sub  { font-size:0.73rem; color:var(--text-3); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.item-value { font-weight:800; font-size:1.05rem; flex-shrink:0; }
+.item-actions { display:flex; gap:6px; flex-shrink:0; }
+.icon-btn {
+  width:30px; height:30px; border-radius:8px; border:none;
+  background:var(--surface2); color:var(--text-2); font-size:0.8rem;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:background 0.15s, color 0.15s;
+}
+.icon-btn:hover { background:var(--cream-faint); color:var(--cream); }
+.icon-btn.del:hover { background:var(--ember-dim); color:var(--ember); }
+
+/* ============================================================ BADGES */
+.badge {
+  display:inline-block; padding:2px 8px; border-radius:20px;
+  font-size:0.65rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em;
+}
+.badge-lime  { background:var(--lime-dim);  color:var(--lime); }
+.badge-warn  { background:var(--warn-dim);  color:var(--warn); }
+.badge-ember { background:var(--ember-dim); color:var(--ember); }
+.badge-cream { background:rgba(240,236,216,0.1); color:var(--cream-dim); }
+.autopay-tag {
+  display:inline-flex; align-items:center; gap:3px;
+  background:rgba(200,224,107,0.1); color:var(--lime);
+  border-radius:20px; padding:2px 7px;
+  font-size:0.65rem; font-weight:700;
+}
+
+/* ============================================================ INPUTS */
+input, select, textarea {
+  background:var(--bg2); border:1px solid var(--border2);
+  border-radius:10px; color:var(--text);
+  padding:11px 14px; font-size:0.92rem; width:100%;
+  font-family:'DM Sans',sans-serif;
+  outline:none; transition:border-color 0.2s;
+}
+input:focus, select:focus { border-color:var(--lime); }
+input::placeholder { color:var(--text-3); }
+select option { background:var(--surface2); }
+input.field-error, select.field-error {
+  border-color:var(--ember) !important;
+  box-shadow:0 0 0 3px rgba(232,100,74,0.15);
+  animation:shake 0.3s ease;
+}
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+label { font-size:0.8rem; font-weight:600; color:var(--text-3); margin-bottom:5px; display:block; }
+.form-group { margin-bottom:14px; }
+.err-msg { color:var(--ember); font-size:0.75rem; font-weight:700; margin-top:4px; display:none; }
+.err-msg.show { display:block; }
+.checkbox-row { display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:14px; }
+.checkbox-row input[type=checkbox] { width:18px; height:18px; accent-color:var(--lime); cursor:pointer; flex-shrink:0; }
+.checkbox-row label { margin:0; color:var(--text); font-size:0.9rem; cursor:pointer; font-weight:500; }
+
+/* Form row — two inputs side by side */
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+/* ============================================================ MODALS */
+.modal-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.75); backdrop-filter:blur(4px);
+  z-index:300; align-items:center; justify-content:center;
+  padding:20px;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:20px; padding:26px; width:100%; max-width:440px;
+  max-height:90vh; overflow-y:auto;
+  animation:modalIn 0.25s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes modalIn {
+  from { opacity:0; transform:translateY(16px) scale(0.97); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.modal-head {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:22px;
+}
+.modal-title { font-size:1.15rem; font-weight:800; }
+.modal-close {
+  width:30px; height:30px; border-radius:8px; border:none;
+  background:var(--surface2); color:var(--text-2); cursor:pointer;
+  font-size:1rem; display:flex; align-items:center; justify-content:center;
+}
+.modal-close:hover { color:var(--text); }
+
+/* ============================================================ GOALS */
+.goal-item {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:16px; margin-bottom:8px;
+}
+.goal-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.goal-name { font-weight:700; font-size:0.92rem; }
+.goal-pct  { font-size:0.78rem; font-weight:700; color:var(--lime); }
+.goal-bar-wrap { background:var(--bg3); border-radius:4px; height:6px; overflow:hidden; margin-bottom:8px; }
+.goal-bar { height:100%; border-radius:4px; background:var(--lime); transition:width 0.5s; }
+.goal-meta { font-size:0.72rem; color:var(--text-3); display:flex; justify-content:space-between; }
+
+/* ============================================================ DEBT PAYOFF */
+.debt-item {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:16px; margin-bottom:10px;
+  cursor:pointer; transition:border-color 0.2s;
+}
+.debt-item:hover { border-color:var(--border2); }
+.debt-item.expanded { border-color:var(--ember); }
+.debt-hd { display:flex; align-items:center; gap:12px; }
+.debt-icon {
+  width:40px; height:40px; border-radius:10px;
+  background:var(--ember-dim);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.1rem; flex-shrink:0;
+}
+.debt-info { flex:1; min-width:0; }
+.debt-name { font-weight:700; font-size:0.92rem; }
+.debt-meta { font-size:0.72rem; color:var(--text-3); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.debt-balance { font-weight:800; font-size:1.05rem; color:var(--ember); flex-shrink:0; }
+.debt-chevron { color:var(--text-3); font-size:0.7rem; transition:transform 0.3s; flex-shrink:0; margin-left:8px; }
+.debt-item.expanded .debt-chevron { transform:rotate(180deg); }
+.debt-sim { display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
+.debt-item.expanded .debt-sim { display:block; }
+
+/* Simulator internals */
+.sim-2col { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.sim-stat {
+  background:var(--bg2); border-radius:10px; padding:12px;
+  border:1px solid var(--border);
+}
+.sim-stat-label { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); margin-bottom:4px; }
+.sim-stat-value { font-size:1.15rem; font-weight:800; }
+
+.slider-row { margin-bottom:14px; }
+.slider-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.slider-lbl { font-size:0.82rem; font-weight:600; color:var(--text-2); }
+.slider-val { font-size:1rem; font-weight:800; color:var(--lime); font-family:'DM Mono',monospace; }
+input[type=range] {
+  -webkit-appearance:none; appearance:none;
+  width:100%; height:6px; border-radius:3px;
+  background:var(--border2); outline:none;
+  padding:0; border:none; box-shadow:none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:20px; height:20px;
+  border-radius:50%; background:var(--lime);
+  cursor:pointer; border:3px solid var(--bg2);
+  box-shadow:0 0 0 2px var(--lime);
+}
+input[type=range]:focus { border-color:transparent; box-shadow:none; }
+
+.savings-callout {
+  background:var(--lime-dim); border:1px solid rgba(200,224,107,0.25);
+  border-radius:12px; padding:14px 16px; text-align:center; margin-bottom:14px;
+}
+.savings-callout-lbl { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--lime); margin-bottom:4px; }
+.savings-callout-val { font-size:2rem; font-weight:900; color:var(--lime); line-height:1; }
+.savings-callout-sub { font-size:0.78rem; color:var(--text-2); margin-top:4px; }
+
+.compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+.compare-card { border-radius:12px; padding:14px; border:1px solid; }
+.compare-card.min { border-color:var(--ember); background:var(--ember-dim); }
+.compare-card.extra { border-color:var(--lime); background:var(--lime-dim); }
+.compare-card-title { font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px; }
+.compare-card.min .compare-card-title { color:var(--ember); }
+.compare-card.extra .compare-card-title { color:var(--lime); }
+.compare-row { display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.78rem; }
+.compare-lbl { color:var(--text-3); }
+.compare-val { font-weight:700; }
+.payoff-date-line { font-size:0.72rem; color:var(--text-3); margin-top:6px; }
+
+.budget-alert {
+  background:var(--warn-dim); border:1px solid rgba(232,168,74,0.25);
+  border-radius:10px; padding:10px 14px; font-size:0.8rem;
+  color:var(--warn); font-weight:600; margin-top:10px;
+}
+.chart-block { background:var(--bg2); border-radius:12px; padding:14px; border:1px solid var(--border); margin-top:12px; }
+.chart-lbl { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); margin-bottom:10px; }
+
+/* ============================================================ RESULT BOX */
+.result-box {
+  background:var(--bg2); border-radius:12px; padding:16px;
+  border-left:3px solid var(--warn); margin-top:14px;
+}
+.result-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:7px 0; border-bottom:1px solid var(--border);
+}
+.result-row:last-child { border-bottom:none; }
+.result-lbl { font-size:0.85rem; color:var(--text-3); }
+.result-val { font-weight:800; font-family:'DM Mono',monospace; font-size:0.9rem; }
+
+/* ============================================================ BILLS STATS */
+.tri-stat { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.tri-stat-card {
+  flex:1; min-width:90px; background:var(--surface);
+  border:1px solid var(--border); border-radius:12px; padding:14px;
+}
+.tri-stat-lbl { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-3); margin-bottom:4px; }
+.tri-stat-val { font-size:1.3rem; font-weight:800; }
+
+/* ============================================================ DEBT SUMMARY */
+.debt-stat-row { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+
+/* ============================================================ TIP BOX */
+.tip-box {
+  background:var(--cream-faint); border:1px solid var(--border2);
+  border-radius:10px; padding:13px; font-size:0.83rem; color:var(--text-2);
+  margin-top:14px; line-height:1.6;
+}
+.tip-box strong { color:var(--cream); }
+
+/* ============================================================ EMPTY STATE */
+.empty-state {
+  text-align:center; color:var(--text-3);
+  padding:40px 20px;
+}
+.empty-icon { font-size:2.2rem; margin-bottom:10px; }
+.empty-text { font-size:0.87rem; line-height:1.6; max-width:280px; margin:0 auto; }
+
+/* ============================================================ MONO VALUES */
+.mono { font-family:'DM Mono',monospace; }
+
+/* ============================================================ OVERVIEW SPEND ROW */
+.spend-row {
+  display:flex; gap:12px; align-items:flex-end; margin-top:14px;
+}
+.spend-row .form-group { flex:1; margin:0; }
+
+/* ============================================================ RESPONSIVE */
+@media (max-width:720px) {
+  .sidebar {
+    transform:translateX(-100%);
+    width:240px;
+  }
+  .sidebar.open { transform:translateX(0); }
+  .sidebar-overlay.open { display:block; }
+  .main { margin-left:0; padding:70px 16px 24px; }
+  .hamburger { display:flex; }
+  .stat-grid { grid-template-columns:1fr 1fr; }
+  .form-row { grid-template-columns:1fr; }
+  .compare-grid, .sim-2col { grid-template-columns:1fr; }
+}
+@media (max-width:420px) {
+  .stat-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ LANDING SCREEN -->
+<div id="landing">
+  <!-- SVG version of the logo (cream on transparent) -->
+  <svg class="landing-logo" viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Chopsticks left -->
+    <rect x="18"  y="88"  width="110" height="10" rx="5" fill="#F0ECD8"/>
+    <rect x="18"  y="108" width="110" height="10" rx="5" fill="#F0ECD8"/>
+    <!-- Noodle strands (the vertical bars in the m) -->
+    <rect x="136" y="60"  width="9"   height="70" rx="4" fill="#F0ECD8"/>
+    <rect x="151" y="60"  width="9"   height="70" rx="4" fill="#F0ECD8"/>
+    <rect x="166" y="60"  width="9"   height="70" rx="4" fill="#F0ECD8"/>
+    <!-- Chopsticks right -->
+    <rect x="183" y="76"  width="100" height="10" rx="5" fill="#F0ECD8" transform="rotate(-10 183 76)"/>
+    <rect x="183" y="100" width="100" height="10" rx="5" fill="#F0ECD8" transform="rotate(6 183 100)"/>
+    <!-- Word "ramen" -->
+    <text x="22" y="172" font-family="Georgia,serif" font-size="78" font-weight="700" fill="#F0ECD8" letter-spacing="-2">ramen</text>
+    <!-- Bowl -->
+    <path d="M55 188 Q55 255 155 255 Q255 255 255 188 Z" fill="#F0ECD8"/>
+    <!-- Bowl rim line -->
+    <rect x="55" y="186" width="200" height="7" rx="3" fill="#F0ECD8"/>
+    <!-- Bowl base -->
+    <rect x="128" y="255" width="54" height="8" rx="4" fill="#F0ECD8"/>
+  </svg>
+  <p class="landing-tagline">Know your numbers. Or suffer the consequences.</p>
+  <button class="landing-btn" onclick="enterApp()">Get Started</button>
+</div>
+
+<!-- ============================================================ APP -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <svg width="28" height="28" viewBox="0 0 300 300" fill="none">
+        <rect x="18" y="72" width="88" height="8" rx="4" fill="#F0ECD8"/>
+        <rect x="18" y="88" width="88" height="8" rx="4" fill="#F0ECD8"/>
+        <rect x="122" y="48" width="7" height="56" rx="3" fill="#F0ECD8"/>
+        <rect x="135" y="48" width="7" height="56" rx="3" fill="#F0ECD8"/>
+        <rect x="148" y="48" width="7" height="56" rx="3" fill="#F0ECD8"/>
+        <rect x="162" y="63" width="80" height="8" rx="4" fill="#F0ECD8" transform="rotate(-8 162 63)"/>
+        <rect x="162" y="82" width="80" height="8" rx="4" fill="#F0ECD8" transform="rotate(5 162 82)"/>
+        <text x="18" y="148" font-family="Georgia,serif" font-size="60" font-weight="700" fill="#F0ECD8">ramen</text>
+        <path d="M42 158 Q42 208 150 208 Q258 208 258 158 Z" fill="#F0ECD8"/>
+        <rect x="42" y="155" width="216" height="6" rx="3" fill="#F0ECD8"/>
+        <rect x="118" y="208" width="64" height="6" rx="3" fill="#F0ECD8"/>
+      </svg>
+      <span class="sidebar-logo-text">ramen</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="nav('overview',this)">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="nav('accounts',this)">
+        <span class="nav-icon">🏦</span>
+        <span class="nav-label">Accounts</span>
+      </div>
+      <div class="nav-item" onclick="nav('bills',this)">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Bills</span>
+      </div>
+      <div class="nav-item" onclick="nav('bigbuy',this)">
+        <span class="nav-icon">🛒</span>
+        <span class="nav-label">Big Buy</span>
+      </div>
+      <div class="nav-item" onclick="nav('goals',this)">
+        <span class="nav-icon">🎯</span>
+        <span class="nav-label">Goals</span>
+      </div>
+      <div class="nav-item" onclick="nav('debt',this)" id="nav-debt">
+        <span class="nav-icon">💳</span>
+        <span class="nav-label">Debt</span>
+      </div>
+    
+      <div class="nav-item" onclick="nav('settings',this)">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">Settings</span>
+      </div>
+</nav>
+
+    <div class="sidebar-footer">Don't be seasoning tap water.</div>
+  </div>
+
+  <!-- mobile overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- ===== SITUATION (OVERVIEW) ===== -->
+    <div class="page active" id="page-overview">
+      <div class="page-header">
+        <h1 class="page-title">Dashboard</h1>
+        <span id="ov-today-badge" class="badge badge-lime">ON TRACK</span>
+      </div>
+
+      <div id="humor-banner" class="banner banner-ok">Standing by. Add your accounts.</div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Stack</div>
+          <div class="stat-value lime mono" id="ov-total">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Daily Budget</div>
+          <div class="stat-value warn mono" id="ov-daily">$0.00</div>
+          <div class="stat-sub" id="ov-days-label">over — days</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">After Bills</div>
+          <div class="stat-value cream mono" id="ov-after-bills">$0.00</div>
+          <div class="stat-sub">actually yours</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <span class="section-title">Today's Damage</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:var(--text-3);margin-bottom:6px">
+          <span>Spent</span>
+          <span class="mono"><span id="ov-spent-amt">$0.00</span> / <span id="ov-daily-label">$0.00</span></span>
+        </div>
+        <div class="bar-wrap"><div class="bar-fill" id="spend-bar" style="width:0%;background:var(--lime)"></div></div>
+        <div class="spend-row">
+          <div class="form-group">
+            <label>Log a purchase ($)</label>
+            <input type="number" id="log-spend-input" placeholder="12.50" min="0" step="0.01">
+          </div>
+          <button class="btn btn-ember" style="margin-bottom:0;flex-shrink:0" onclick="logSpend()">Log It</button>
+          <button class="btn btn-ghost" style="flex-shrink:0" onclick="resetDay()">New Day</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="section-title" style="margin-bottom:14px">Setup</div>
+        <div class="form-group">
+          <label>Days until payday</label>
+          <div style="display:flex;gap:10px">
+            <input type="number" id="days-input" placeholder="e.g. 30" min="1" style="max-width:180px">
+            <button class="btn btn-lime" onclick="setDays()">Set</button>
+          </div>
+          <div class="err-msg" id="err-days-input">📛 Numbers only. We're not manifesting a payday.</div>
+        </div>
+        <div class="tip-box"><strong>How it works:</strong> Total balance minus monthly bills, divided by days. That's your real daily number. Not vibes. Math.</div>
+      </div>
+    </div>
+
+    <!-- ===== ACCOUNTS ===== -->
+    <div class="page" id="page-accounts">
+      <div class="page-header">
+        <h1 class="page-title">Accounts</h1>
+        <button class="btn btn-lime" onclick="openModal('add-account-modal')">+ Add</button>
+      </div>
+      <div id="accounts-list">
+        <div class="empty-state">
+          <div class="empty-icon">🏦</div>
+          <div class="empty-text">No accounts. You can't manage money you're too scared to look at. Add one.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== BILLS ===== -->
+    <div class="page" id="page-bills">
+      <div class="page-header">
+        <h1 class="page-title">Bills</h1>
+        <button class="btn btn-warn" onclick="openModal('add-bill-modal')">+ Add</button>
+      </div>
+      <div class="tri-stat">
+        <div class="tri-stat-card"><div class="tri-stat-lbl">Monthly Bleed</div><div class="tri-stat-val ember mono" id="bills-monthly-total">$0.00</div></div>
+        <div class="tri-stat-card"><div class="tri-stat-lbl">On Autopilot</div><div class="tri-stat-val lime mono" id="bills-autopay-total">$0.00</div></div>
+        <div class="tri-stat-card"><div class="tri-stat-lbl">Coming For You</div><div class="tri-stat-val warn mono" id="bills-due-count">0</div></div>
+      </div>
+      <div id="bills-list">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-text">No bills? Either you're living rent-free or you're in denial. Add them. All of them.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== BIG BUY ===== -->
+    <div class="page" id="page-bigbuy">
+      <div class="page-header">
+        <h1 class="page-title">Big Buy</h1>
+      </div>
+      <div class="card">
+        <p style="color:var(--text-3);font-size:0.85rem;margin-bottom:18px">Emotionally approved. Let's see if you're financially cleared.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>What is it?</label>
+            <input type="text" id="bp-name" placeholder="PS5, Jordans, Phone...">
+            <div class="err-msg" id="err-bp-name">📛 Give it a name.</div>
+          </div>
+          <div class="form-group">
+            <label>Cost ($)</label>
+            <input type="number" id="bp-cost" placeholder="0.00" min="0" step="0.01">
+            <div class="err-msg" id="err-bp-cost">📛 Real number. Not vibes.</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Days to save</label>
+            <input type="number" id="bp-days" placeholder="e.g. 30" min="1">
+            <div class="err-msg" id="err-bp-days">📛 Numbers only.</div>
+          </div>
+          <div class="form-group">
+            <label>Custom daily save (optional)</label>
+            <input type="number" id="bp-daily-save" placeholder="auto-calc" min="0" step="0.01">
+          </div>
+        </div>
+        <button class="btn btn-warn" onclick="calcPurchase()">Run the Numbers</button>
+      </div>
+
+      <div id="bp-result" style="display:none">
+        <div class="result-box" style="margin-top:14px">
+          <div style="font-weight:800;font-size:1rem;margin-bottom:12px" id="bp-item-title"></div>
+          <div class="result-row"><span class="result-lbl">Price Tag</span><span class="result-val" id="bp-r-cost"></span></div>
+          <div class="result-row"><span class="result-lbl">Days to Stack</span><span class="result-val" id="bp-r-days"></span></div>
+          <div class="result-row"><span class="result-lbl">Save Per Day</span><span class="result-val warn" id="bp-r-perday"></span></div>
+          <div class="result-row"><span class="result-lbl">New Daily Budget</span><span class="result-val" id="bp-r-newdaily"></span></div>
+          <div class="result-row"><span class="result-lbl">Can You Afford It?</span><span class="result-val" id="bp-r-afford"></span></div>
+        </div>
+        <div id="bp-tip" class="tip-box"></div>
+      </div>
+    </div>
+
+    <!-- ===== GOALS ===== -->
+    <div class="page" id="page-goals">
+      <div class="page-header">
+        <h1 class="page-title">Goals</h1>
+        <button class="btn btn-lime" onclick="openModal('add-goal-modal')">+ Add</button>
+      </div>
+      <div id="goals-list">
+        <div class="empty-state">
+          <div class="empty-icon">🎯</div>
+          <div class="empty-text">No goals. Goals don't fund themselves. Even $10 moves it. Add one.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DEBT ===== -->
+    <div class="page" id="page-debt">
+      <div class="page-header">
+        <h1 class="page-title">Debt</h1>
+        <button class="btn btn-ember" onclick="openModal('add-debt-modal')">+ Add</button>
+      </div>
+
+      <div class="tri-stat">
+        <div class="tri-stat-card"><div class="tri-stat-lbl">Total Owed</div><div class="tri-stat-val ember mono" id="debt-total-owed">$0.00</div></div>
+        <div class="tri-stat-card"><div class="tri-stat-lbl">Min Payments/mo</div><div class="tri-stat-val warn mono" id="debt-min-payments">$0.00</div></div>
+        <div class="tri-stat-card"><div class="tri-stat-lbl">Interest Cost</div><div class="tri-stat-val ember mono" id="debt-total-interest">$0.00</div></div>
+      </div>
+
+      <p style="color:var(--text-3);font-size:0.83rem;margin-bottom:14px">Tap any debt. See what the interest is really costing you. Use the slider. Watch the math change.</p>
+      <div id="debt-list">
+        <div class="empty-state">
+          <div class="empty-icon">💳</div>
+          <div class="empty-text">No debts tracked. Debt-free is the goal. But pretending it doesn't exist isn't the same thing.</div>
+        </div>
+      </div>
+    </div>
+    <!-- ===== SETTINGS ===== -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <h1 class="page-title">Settings</h1>
+      </div>
+
+      <div id="settings-wrap"></div>
+
+      <div class="card">
+        <div class="section-title" style="margin-bottom:14px">Theme</div>
+        <div class="form-group" style="max-width:320px">
+          <label>Pick your vibe</label>
+          <select id="theme-select" onchange="setTheme(this.value)">
+            <option value="ramen">Ramen (classic)</option>
+            <option value="neon">Neon Gremlin</option>
+            <option value="ice">Ice Cold Adulting</option>
+          </select>
+        </div>
+        <div class="tip-box"><strong>Note:</strong> Theme only changes colors. It will not fix your spending habits. That's on you.</div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="section-title" style="margin-bottom:14px">Roast Level</div>
+        <div class="form-group" style="max-width:320px">
+          <label>How roasted do you want to be?</label>
+          <select id="roast-select" onchange="setRoastLevel(this.value)">
+            <option value="savage">Savage</option>
+            <option value="mild">Mild (for delicate days)</option>
+          </select>
+        </div>
+        <div class="tip-box"><strong>Mild</strong> still tells the truth. It just uses fewer words that would get you banned at a PTA meeting.</div>
+      </div>
+    </div>
+
+
+  </main>
+</div>
+
+<!-- ============================================================ MODALS -->
+
+<!-- Add Account -->
+<div class="modal-overlay" id="add-account-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Add Account</span>
+      <button class="modal-close" onclick="closeModal('add-account-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Account Type</label>
+      <select id="acc-type">
+        <option value="cashapp">💸 Cash App</option><option value="venmo">🔵 Venmo</option>
+        <option value="bank">🏦 Bank Account</option><option value="paypal">🅿️ PayPal</option>
+        <option value="apple">🍎 Apple Pay</option><option value="zelle">⚡ Zelle</option>
+        <option value="crypto">🪙 Crypto</option><option value="cash">💵 Cash</option>
+        <option value="other">📦 Other</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nickname</label>
+        <input type="text" id="acc-name" placeholder="My Cash App...">
+        <div class="err-msg" id="err-acc-name">📛 Name it. "Account" is not a name.</div>
+      </div>
+      <div class="form-group">
+        <label>Balance ($)</label>
+        <input type="number" id="acc-balance" placeholder="0.00" step="0.01">
+        <div class="err-msg" id="err-acc-balance">📛 Zero is fine. Pretending isn't.</div>
+      </div>
+    </div>
+    <button class="btn btn-lime" onclick="addAccount()">Add Account</button>
+  </div>
+</div>
+
+<!-- Edit Balance -->
+<div class="modal-overlay" id="edit-balance-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Update Balance</span>
+      <button class="modal-close" onclick="closeModal('edit-balance-modal')">✕</button>
+    </div>
+    <div class="form-group"><label>Account</label><input type="text" id="edit-acc-name-display" readonly style="opacity:0.5"></div>
+    <div class="form-group">
+      <label>New Balance ($)</label>
+      <input type="number" id="edit-acc-balance" placeholder="0.00" step="0.01">
+      <div class="err-msg" id="err-edit-acc-balance">📛 Put the real number. That's literally all we need.</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-lime" onclick="saveEditBalance()">Save It</button>
+      <button class="btn btn-ghost" onclick="closeModal('edit-balance-modal')">Never Mind</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Bill -->
+<div class="modal-overlay" id="add-bill-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Add Bill</span>
+      <button class="modal-close" onclick="closeModal('add-bill-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Bill Name</label>
+        <input type="text" id="bill-name" placeholder="Netflix, Rent...">
+        <div class="err-msg" id="err-bill-name">📛 Name it.</div>
+      </div>
+      <div class="form-group">
+        <label>Amount ($)</label>
+        <input type="number" id="bill-amount" placeholder="0.00" step="0.01">
+        <div class="err-msg" id="err-bill-amount">📛 Real number.</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Frequency</label>
+        <select id="bill-frequency">
+          <option value="monthly">Monthly</option><option value="weekly">Weekly</option>
+          <option value="biweekly">Bi-weekly</option><option value="yearly">Yearly</option>
+          <option value="one-time">One-time</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Due Day (1–31)</label>
+        <input type="number" id="bill-dueday" placeholder="e.g. 15" min="1" max="31">
+        <div class="err-msg" id="err-bill-dueday">📛 A day. Between 1 and 31.</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="bill-category">
+        <option value="housing">🏠 Housing</option><option value="utilities">💡 Utilities</option>
+        <option value="phone">📱 Phone</option><option value="internet">🌐 Internet</option>
+        <option value="insurance">🛡️ Insurance</option><option value="subscriptions">📺 Subscriptions</option>
+        <option value="transport">🚗 Transport</option><option value="food">🍔 Food</option>
+        <option value="debt">💳 Debt</option><option value="other">📦 Other</option>
+      </select>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="bill-autopay" onchange="toggleAutopaySection('bill-autopay','autopay-acc-section')">
+      <label for="bill-autopay">⚡ Autopay</label>
+    </div>
+    <div id="autopay-acc-section" style="display:none">
+      <div class="form-group">
+        <label>Which account does it drain?</label>
+        <select id="bill-autopay-account"><option value="">-- Select Account --</option></select>
+        <div class="err-msg" id="err-bill-autopay-account">📛 Pick the account. One click.</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes (optional)</label>
+      <input type="text" id="bill-notes" placeholder="shared with roommate, thinking about cancelling...">
+    </div>
+    <button class="btn btn-warn" onclick="addBill()">Add Bill</button>
+  </div>
+</div>
+
+<!-- Edit Bill -->
+<div class="modal-overlay" id="edit-bill-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Edit Bill</span>
+      <button class="modal-close" onclick="closeModal('edit-bill-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Bill Name</label>
+        <input type="text" id="ebill-name">
+        <div class="err-msg" id="err-ebill-name">📛 Name it.</div>
+      </div>
+      <div class="form-group">
+        <label>Amount ($)</label>
+        <input type="number" id="ebill-amount" step="0.01">
+        <div class="err-msg" id="err-ebill-amount">📛 Real number.</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Frequency</label>
+        <select id="ebill-frequency">
+          <option value="monthly">Monthly</option><option value="weekly">Weekly</option>
+          <option value="biweekly">Bi-weekly</option><option value="yearly">Yearly</option>
+          <option value="one-time">One-time</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Due Day (1–31)</label>
+        <input type="number" id="ebill-dueday" min="1" max="31">
+        <div class="err-msg" id="err-ebill-dueday">📛 1–31. That's the range.</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="ebill-category">
+        <option value="housing">🏠 Housing</option><option value="utilities">💡 Utilities</option>
+        <option value="phone">📱 Phone</option><option value="internet">🌐 Internet</option>
+        <option value="insurance">🛡️ Insurance</option><option value="subscriptions">📺 Subscriptions</option>
+        <option value="transport">🚗 Transport</option><option value="food">🍔 Food</option>
+        <option value="debt">💳 Debt</option><option value="other">📦 Other</option>
+      </select>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="ebill-autopay" onchange="toggleAutopaySection('ebill-autopay','eautopay-acc-section')">
+      <label for="ebill-autopay">⚡ Autopay</label>
+    </div>
+    <div id="eautopay-acc-section" style="display:none">
+      <div class="form-group">
+        <label>Which account does it drain?</label>
+        <select id="ebill-autopay-account"><option value="">-- Select Account --</option></select>
+        <div class="err-msg" id="err-ebill-autopay-account">📛 Pick the account.</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes (optional)</label>
+      <input type="text" id="ebill-notes">
+    </div>
+    <button class="btn btn-warn" onclick="saveEditBill()">Save Changes</button>
+  </div>
+</div>
+
+<!-- Add Goal -->
+<div class="modal-overlay" id="add-goal-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">New Goal</span>
+      <button class="modal-close" onclick="closeModal('add-goal-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>What are you saving for?</label>
+      <input type="text" id="goal-name" placeholder="Sneakers, Car, Vacation...">
+      <div class="err-msg" id="err-goal-name">📛 Name the goal. Vague dreams don't fund anything.</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Target ($)</label>
+        <input type="number" id="goal-target" placeholder="0.00" step="0.01">
+        <div class="err-msg" id="err-goal-target">📛 How much does it cost? Real number.</div>
+      </div>
+      <div class="form-group">
+        <label>Already Saved ($)</label>
+        <input type="number" id="goal-saved" placeholder="0.00" step="0.01">
+      </div>
+    </div>
+    <button class="btn btn-lime" onclick="addGoal()">Lock It In</button>
+  </div>
+</div>
+
+<!-- Add to Goal -->
+<div class="modal-overlay" id="add-to-goal-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Add to Goal</span>
+      <button class="modal-close" onclick="closeModal('add-to-goal-modal')">✕</button>
+    </div>
+    <div class="form-group"><label>Goal</label><input type="text" id="atg-name-display" readonly style="opacity:0.5"></div>
+    <div class="form-group">
+      <label>Amount ($)</label>
+      <input type="number" id="atg-amount" placeholder="0.00" step="0.01">
+      <div class="err-msg" id="err-atg-amount">📛 Even $10 moves it. Put a number in.</div>
+    </div>
+    <button class="btn btn-lime" onclick="saveAddToGoal()">Add It</button>
+  </div>
+</div>
+
+<!-- Add Debt -->
+<div class="modal-overlay" id="add-debt-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Add Debt</span>
+      <button class="modal-close" onclick="closeModal('add-debt-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Debt Name</label>
+        <input type="text" id="debt-name" placeholder="HP Computer, Discover Card...">
+        <div class="err-msg" id="err-debt-name">📛 Name it. Ignoring it doesn't make it disappear.</div>
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="debt-type">
+          <option value="credit">💳 Credit Card</option>
+          <option value="personal">🤝 Personal Loan</option>
+          <option value="auto">🚗 Auto Loan</option>
+          <option value="student">🎓 Student Loan</option>
+          <option value="medical">🏥 Medical</option>
+          <option value="installment">🖥️ Installment</option>
+          <option value="other">📦 Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Balance Owed ($)</label>
+        <input type="number" id="debt-balance" placeholder="850.00" step="0.01">
+        <div class="err-msg" id="err-debt-balance">📛 Real number. Not vibes.</div>
+      </div>
+      <div class="form-group">
+        <label>APR (%)</label>
+        <input type="number" id="debt-apr" placeholder="24.99" step="0.01">
+        <div class="err-msg" id="err-debt-apr">📛 It's on your statement. Go find it.</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Min Monthly Payment ($)</label>
+        <input type="number" id="debt-minpay" placeholder="25.00" step="0.01">
+        <div class="err-msg" id="err-debt-minpay">📛 What's their minimum? It's on the bill.</div>
+      </div>
+      <div class="form-group">
+        <label>Payment Account (optional)</label>
+        <select id="debt-account"><option value="">-- None --</option></select>
+      </div>
+    </div>
+    <button class="btn btn-ember" onclick="addDebt()">Add Debt</button>
+  </div>
+</div>
+
+<!-- Edit Debt -->
+<div class="modal-overlay" id="edit-debt-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Edit Debt</span>
+      <button class="modal-close" onclick="closeModal('edit-debt-modal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Debt Name</label>
+        <input type="text" id="edebt-name">
+        <div class="err-msg" id="err-edebt-name">📛 Name required.</div>
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="edebt-type">
+          <option value="credit">💳 Credit Card</option>
+          <option value="personal">🤝 Personal Loan</option>
+          <option value="auto">🚗 Auto Loan</option>
+          <option value="student">🎓 Student Loan</option>
+          <option value="medical">🏥 Medical</option>
+          <option value="installment">🖥️ Installment</option>
+          <option value="other">📦 Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Balance ($)</label>
+        <input type="number" id="edebt-balance" step="0.01">
+        <div class="err-msg" id="err-edebt-balance">📛 Real balance. Now.</div>
+      </div>
+      <div class="form-group">
+        <label>APR (%)</label>
+        <input type="number" id="edebt-apr" step="0.01">
+        <div class="err-msg" id="err-edebt-apr">📛 APR. Your statement has it.</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Min Payment ($)</label>
+        <input type="number" id="edebt-minpay" step="0.01">
+        <div class="err-msg" id="err-edebt-minpay">📛 Minimum payment. Required.</div>
+      </div>
+      <div class="form-group">
+        <label>Payment Account (optional)</label>
+        <select id="edebt-account"><option value="">-- None --</option></select>
+      </div>
+    </div>
+    <button class="btn btn-ember" onclick="saveEditDebt()">Save Changes</button>
+  </div>
+</div>
+
+<!-- ============================================================ JAVASCRIPT -->
+<script>
+
+// ===== SAFETY HELPERS (prevents one missing element from nuking the whole app) =====
+function $(id){ return document.getElementById(id); }
+function setText(id, value){ const el=$(id); if(el) el.textContent = value; }
+function setHTML(id, value){ const el=$(id); if(el) el.innerHTML = value; }
+function safe(fn){ try{ fn(); } catch(e){ console.error(e); } }
+
+// ===== LANDING =====
+function enterApp() {
+  document.getElementById('landing').classList.add('exit');
+  setTimeout(() => {
+    document.getElementById('landing').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    initSettingsUI();
+    applyTheme(state.theme||'ramen');
+    renderAll();
+  }, 460);
+}
+
+// ===== SIDEBAR / NAV =====
+function nav(page, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-' + page).classList.add('active');
+  closeSidebar();
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+// ===== STATE =====
+let state = {
+  accounts:[], days:30, spentToday:0, goals:[], bills:[], debts:[],
+  editAccId:null, addToGoalId:null, editBillId:null, editDebtId:null,
+  theme:'ramen',
+  roastLevel:'savage',
+};
+function load() {
+  const s = localStorage.getItem('budgetApp_v3');
+  if (s) { try { state = {...state,...JSON.parse(s)}; } catch(e){} }
+}
+function save() { localStorage.setItem('budgetApp_v3', JSON.stringify(state)); }
+
+
+// ===== THEME + TONE =====
+function applyTheme(themeKey){
+  const t = themeKey || 'ramen';
+  document.body.classList.remove('theme-ramen','theme-neon','theme-ice');
+  document.body.classList.add('theme-'+t);
+}
+function setTheme(themeKey){
+  state.theme = themeKey;
+  applyTheme(themeKey);
+  save();
+}
+function setRoastLevel(level){
+  state.roastLevel = level;
+  save();
+  renderOverview(); // update banner tone immediately
+}
+function initSettingsUI(){
+  const themeSel = document.getElementById('theme-select');
+  if(themeSel) themeSel.value = state.theme || 'ramen';
+  const roastSel = document.getElementById('roast-select');
+  if(roastSel) roastSel.value = state.roastLevel || 'savage';
+}
+
+// ===== LOOKUPS =====
+const accIcons = {
+  cashapp:{icon:'💸',color:'#00D64F'}, venmo:{icon:'🔵',color:'#3D95CE'},
+  bank:{icon:'🏦',color:'#448AFF'}, paypal:{icon:'🅿️',color:'#003087'},
+  apple:{icon:'🍎',color:'#999'}, zelle:{icon:'⚡',color:'#6D1ED4'},
+  crypto:{icon:'🪙',color:'#F7931A'}, cash:{icon:'💵',color:'#00C853'},
+  other:{icon:'📦',color:'#7878A0'}
+};
+const catIcons = {housing:'🏠',utilities:'💡',phone:'📱',internet:'🌐',insurance:'🛡️',subscriptions:'📺',transport:'🚗',food:'🍔',debt:'💳',other:'📦'};
+const debtIcons = {credit:'💳',personal:'🤝',auto:'🚗',student:'🎓',medical:'🏥',installment:'🖥️',other:'📦'};
+
+// ===== CALCS =====
+function totalBalance()   { return state.accounts.reduce((s,a)=>s+(parseFloat(a.balance)||0),0); }
+function monthlyBillsTotal() {
+  return state.bills.reduce((s,b)=>{
+    const a=parseFloat(b.amount)||0;
+    if(b.frequency==='weekly') return s+a*4.33;
+    if(b.frequency==='biweekly') return s+a*2.17;
+    if(b.frequency==='yearly') return s+a/12;
+    return s+a;
+  },0);
+}
+function spendableBalance() { return Math.max(totalBalance()-monthlyBillsTotal(),0); }
+function dailyBudget()      { return spendableBalance()/(parseInt(state.days)||1); }
+function fmt(n)             { return '$'+(parseFloat(n)||0).toFixed(2); }
+function esc(s)             { const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
+
+// ===== BANNER =====
+function getHumor() {
+  const mild = (state.roastLevel==='mild');
+  const total=totalBalance(), daily=dailyBudget(), bills=monthlyBillsTotal(), spent=state.spentToday;
+  if(total===0) return {cls:'banner-warn', msg:"⚠️ Balance is $0.00. Add your accounts. Ramen can't help you if you won't enter numbers."};
+  if(daily<3)   return {cls:'banner-bad',  msg:"🍜 We are in Ramen territory. Literally. "+fmt(daily)+"/day. Cut something now. This is real life."};
+  if(daily<12)  return {cls:'banner-bad',  msg:"😬 "+fmt(daily)+"/day. This is tight. Cut one non-essential today. One. Just one."};
+  if(bills>total*0.8) return {cls:'banner-warn', msg:"😅 Over 80% of your money is already gone to bills. You're working for your subscriptions. Something has to go."};
+  if(spent>daily) return {cls:'banner-bad', msg:"🔴 You blew today's budget. Over by "+fmt(spent-daily)+". Stop spending today. Tomorrow starts fresh."};
+  if(daily<25)  return {cls:'banner-warn', msg:"🧐 "+fmt(daily)+"/day. You can eat. Probably. No Uber Eats. No impulse buys. Eyes on the budget."};
+  if(daily>80)  return {cls:'banner-ok',   msg:"💰 Financial stability? In this economy? "+fmt(daily)+"/day. Don't celebrate by blowing it. Stay consistent."};
+  return {cls:'banner-ok', msg:"✅ We're not in Ramen territory. "+fmt(daily)+"/day. Miracles happen. Keep it that way."};
+}
+
+// ===== VALIDATION =====
+function setError(id,show) {
+  const el=document.getElementById(id), err=document.getElementById('err-'+id);
+  if(el) el.classList.toggle('field-error',show);
+  if(err) err.classList.toggle('show',show);
+  if(el&&show) el.addEventListener('input',()=>{el.classList.remove('field-error');if(err)err.classList.remove('show');},{once:true});
+}
+
+// ===== RENDER =====
+function renderOverview() {
+  const total=totalBalance(), daily=dailyBudget(), spendable=spendableBalance();
+  const humor=getHumor();
+  document.getElementById('ov-total').textContent=fmt(total);
+  document.getElementById('ov-daily').textContent=fmt(daily);
+  document.getElementById('ov-days-label').textContent=`over ${state.days||'—'} days`;
+  document.getElementById('ov-after-bills').textContent=fmt(spendable);
+  document.getElementById('ov-daily-label').textContent=fmt(daily);
+  document.getElementById('ov-spent-amt').textContent=fmt(state.spentToday);
+  const banner=document.getElementById('humor-banner');
+  banner.textContent=humor.msg; banner.className='banner '+humor.cls;
+  const pct=daily>0?Math.min((state.spentToday/daily)*100,100):0;
+  const bar=document.getElementById('spend-bar');
+  bar.style.width=pct+'%';
+  bar.style.background=pct>90?'var(--ember)':pct>65?'var(--warn)':'var(--lime)';
+  const badge=document.getElementById('ov-today-badge');
+  if(state.spentToday>daily){badge.textContent='BLOWN IT';badge.className='badge badge-ember';}
+  else if(pct>70){badge.textContent='CLOSE';badge.className='badge badge-warn';}
+  else{badge.textContent='ON TRACK';badge.className='badge badge-lime';}
+}
+
+function renderAccounts() {
+  const list=document.getElementById('accounts-list');
+  if(!state.accounts.length){
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">🏦</div><div class="empty-text">No accounts. You can\'t manage money you\'re too scared to look at. Add one.</div></div>';
+    return;
+  }
+  list.innerHTML=state.accounts.map((a,i)=>{
+    const info=accIcons[a.type]||accIcons.other;
+    const bal=parseFloat(a.balance)||0;
+    const total=totalBalance();
+    const pct=total>0?((bal/total)*100).toFixed(0):0;
+    const autopayBills=state.bills.filter(b=>b.autopay&&b.autopayAccount===String(i)).map(b=>b.name).join(', ');
+    return `<div class="item">
+      <div class="item-icon" style="background:${info.color}22">${info.icon}</div>
+      <div class="item-body">
+        <div class="item-name">${esc(a.name)}</div>
+        <div class="item-sub">${pct}% of total${autopayBills?' · ⚡ '+autopayBills:''}</div>
+      </div>
+      <div class="item-value lime mono">${fmt(bal)}</div>
+      <div class="item-actions">
+        <button class="icon-btn" onclick="openEditBalance(${i})">✏️</button>
+        <button class="icon-btn del" onclick="deleteAccount(${i})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderBills() {
+  const monthly=monthlyBillsTotal();
+  const autopayTotal=state.bills.filter(b=>b.autopay).reduce((s,b)=>s+(parseFloat(b.amount)||0),0);
+  const today=new Date().getDate();
+  const dueSoon=state.bills.filter(b=>b.dueday&&(b.dueday-today)>=0&&(b.dueday-today)<=7).length;
+  document.getElementById('bills-monthly-total').textContent=fmt(monthly);
+  document.getElementById('bills-autopay-total').textContent=fmt(autopayTotal);
+  document.getElementById('bills-due-count').textContent=dueSoon;
+  const list=document.getElementById('bills-list');
+  if(!state.bills.length){
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No bills? Either you\'re living rent-free or you\'re in denial. Add them. All of them.</div></div>';
+    return;
+  }
+  const sorted=state.bills.map((b,i)=>({...b,_i:i})).sort((a,b)=>(a.dueday||99)-(b.dueday||99));
+  list.innerHTML=sorted.map(b=>{
+    const icon=catIcons[b.category]||'📦';
+    const accName=b.autopay&&b.autopayAccount!==''&&state.accounts[parseInt(b.autopayAccount)]?state.accounts[parseInt(b.autopayAccount)].name:null;
+    const daysUntil=b.dueday?b.dueday-today:null;
+    let dueBadge='';
+    if(daysUntil!==null){
+      if(daysUntil<0) dueBadge='<span class="badge badge-ember">OVERDUE</span>';
+      else if(daysUntil<=3) dueBadge=`<span class="badge badge-ember">DUE IN ${daysUntil}d</span>`;
+      else if(daysUntil<=7) dueBadge=`<span class="badge badge-warn">DUE IN ${daysUntil}d</span>`;
+      else dueBadge=`<span class="badge badge-cream">Day ${b.dueday}</span>`;
+    }
+    return `<div class="item">
+      <div class="item-icon" style="background:rgba(232,168,74,0.1)">${icon}</div>
+      <div class="item-body">
+        <div class="item-name">${esc(b.name)} ${dueBadge}</div>
+        <div class="item-sub">${b.frequency}${b.autopay?` · <span class="autopay-tag">⚡ Autopay${accName?': '+accName:''}</span>`:''}${b.notes?' · '+esc(b.notes):''}</div>
+      </div>
+      <div class="item-value ember mono">${fmt(b.amount)}</div>
+      <div class="item-actions">
+        <button class="icon-btn" onclick="openEditBill(${b._i})">✏️</button>
+        <button class="icon-btn del" onclick="deleteBill(${b._i})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderGoals() {
+  const list=document.getElementById('goals-list');
+  if(!state.goals.length){
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">🎯</div><div class="empty-text">No goals. Goals don\'t fund themselves. Even $10 moves it. Add one.</div></div>';
+    return;
+  }
+  list.innerHTML=state.goals.map((g,i)=>{
+    const pct=Math.min((g.saved/g.target)*100,100).toFixed(0);
+    const left=Math.max(g.target-g.saved,0);
+    const daily=dailyBudget();
+    const eta=daily>0?Math.ceil(left/(daily*0.2)):'?';
+    return `<div class="goal-item">
+      <div class="goal-top"><span class="goal-name">${esc(g.name)}</span><span class="goal-pct">${pct}%</span></div>
+      <div class="goal-bar-wrap"><div class="goal-bar" style="width:${pct}%"></div></div>
+      <div class="goal-meta"><span>${fmt(g.saved)} of ${fmt(g.target)}</span><span>${fmt(left)} left · ~${eta} days</span></div>
+      <div class="btn-row">
+        <button class="btn btn-lime" style="padding:8px 14px;font-size:0.8rem" onclick="openAddToGoal(${i})">+ Add Money</button>
+        <button class="btn btn-ghost-ember" style="padding:8px 14px;font-size:0.8rem" onclick="deleteGoal(${i})">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+
+
+// ===== SETTINGS =====
+function renderSettings(){
+  const wrap = document.getElementById('settings-wrap');
+  if(!wrap) return;
+  // Keep it simple: this page is mostly UI knobs, not a lecture.
+  const theme = JSON.parse(localStorage.getItem('ramen_theme')||'{}');
+  wrap.innerHTML = `
+    <div class="card">
+      <div class="section-header"><span class="section-title">Settings</span></div>
+      <p style="color:var(--text-3);font-size:0.85rem;margin-bottom:14px">
+        Theme + vibe controls. No "roast level" slider. You're welcome.
+      </p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mode</label>
+          <select id="set-mode" onchange="applyMode(this.value)">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Accent</label>
+          <select id="set-accent" onchange="applyAccent(this.value)">
+            <option value="lime">Lime</option>
+            <option value="cyan">Cyan</option>
+            <option value="violet">Violet</option>
+            <option value="amber">Amber</option>
+          </select>
+        </div>
+      </div>
+      <div class="tip-box"><strong>Note:</strong> This is a static single-file web app. Your data stays in your browser (localStorage). If Safari decides to purge it, blame Apple.</div>
+    </div>
+  `;
+  // Set selects to current
+  const modeSel=document.getElementById('set-mode');
+  const accentSel=document.getElementById('set-accent');
+  if(modeSel) modeSel.value = (theme.mode||'dark');
+  if(accentSel) accentSel.value = (theme.accent||'lime');
+}
+
+function applyMode(mode){
+  const theme = JSON.parse(localStorage.getItem('ramen_theme')||'{}');
+  theme.mode = mode;
+  localStorage.setItem('ramen_theme', JSON.stringify(theme));
+  document.documentElement.setAttribute('data-mode', mode);
+}
+function applyAccent(accent){
+  const theme = JSON.parse(localStorage.getItem('ramen_theme')||'{}');
+  theme.accent = accent;
+  localStorage.setItem('ramen_theme', JSON.stringify(theme));
+  document.documentElement.setAttribute('data-accent', accent);
+}
+
+function initTheme(){
+  const theme = JSON.parse(localStorage.getItem('ramen_theme')||'{}');
+  document.documentElement.setAttribute('data-mode', theme.mode||'dark');
+  document.documentElement.setAttribute('data-accent', theme.accent||'lime');
+}
+function renderAll() {
+  safe(renderOverview);
+  safe(renderAccounts);
+  safe(renderBills);
+  safe(renderGoals);
+  safe(renderDebt);
+  safe(renderSettings);
+}
+
+// ===== ACTIONS =====
+function setDays() {
+  const d=parseInt(document.getElementById('days-input').value);
+  setError('days-input',!d||d<1);
+  if(!d||d<1) return;
+  state.days=d; save(); initSettingsUI();
+    applyTheme(state.theme||'ramen');
+    renderAll();
+}
+function logSpend() {
+  const amt=parseFloat(document.getElementById('log-spend-input').value);
+  if(isNaN(amt)||amt<=0) return;
+  state.spentToday+=amt;
+  document.getElementById('log-spend-input').value='';
+  save(); renderOverview();
+}
+function resetDay() {
+  if(!confirm("Reset today's tracker? New day, clean slate. Don't make it a habit.")) return;
+  state.spentToday=0; save(); renderOverview();
+}
+
+// ===== ACCOUNTS =====
+function addAccount() {
+  const type=document.getElementById('acc-type').value;
+  const name=document.getElementById('acc-name').value.trim();
+  const balance=parseFloat(document.getElementById('acc-balance').value);
+  const nameErr=!name, balErr=isNaN(balance)||balance<0;
+  setError('acc-name',nameErr); setError('acc-balance',balErr);
+  if(nameErr||balErr) return;
+  state.accounts.push({type,name,balance});
+  document.getElementById('acc-name').value=''; document.getElementById('acc-balance').value='';
+  save(); initSettingsUI();
+    applyTheme(state.theme||'ramen');
+    renderAll(); closeModal('add-account-modal');
+}
+function deleteAccount(i) {
+  if(!confirm('Delete this account? Gone for good. The debt still exists though.')) return;
+  state.bills.forEach(b=>{if(b.autopayAccount===String(i)) b.autopayAccount='';});
+  state.accounts.splice(i,1); save(); initSettingsUI();
+    applyTheme(state.theme||'ramen');
+    renderAll();
+}
+function openEditBalance(i) {
+  state.editAccId=i;
+  const a=state.accounts[i];
+  document.getElementById('edit-acc-name-display').value=a.name;
+  document.getElementById('edit-acc-balance').value=a.balance;
+  setError('edit-acc-balance',false); openModal('edit-balance-modal');
+}
+function saveEditBalance() {
+  const bal=parseFloat(document.getElementById('edit-acc-balance').value);
+  const err=isNaN(bal)||bal<0;
+  setError('edit-acc-balance',err);
+  if(err) return;
+  state.accounts[state.editAccId].balance=bal; save(); initSettingsUI();
+    applyTheme(state.theme||'ramen');
+    renderAll(); closeModal('edit-balance-modal');
+}
+
+// ===== BILLS =====
+function toggleAutopaySection(checkId,sectionId) {
+  const checked=document.getElementById(checkId).checked;
+  document.getElementById(sectionId).style.display=checked?'block':'none';
+  if(checked) populateAccountDropdown(checkId==='bill-autopay'?'bill-autopay-account':'ebill-autopay-account');
+}
+function populateAccountDropdown(selId) {
+  const sel=document.getElementById(selId);
+  const cur=sel.value;
+  sel.innerHTML='<option value="">-- Select Account --</option>';
+  state.accounts.forEach((a,i)=>{
+    const opt=document.createElement('option');
+    opt.value=String(i); opt.textContent=(accIcons[a.type]?.icon||'📦')+' '+a.name;
+    sel.appendChild(opt);
+  });
+  if(cur) sel.value=cur;
+}
+function addBill() {
+  const name=document.getElementById('bill-name').value.trim();
+  const amount=parseFloat(document.getElementById('bill-amount').value);
+  const frequency=document.getElementById('bill-frequency').value;
+  const dueday=parseInt(document.getElementById('bill-dueday').value);
+  const category=document.getElementById('bill-category').value;
+  const autopay=document.getElementById('bill-autopay').checked;
+  const autopayAccount=document.getElementById('bill-autopay-account').value;
+  const notes=document.getElementById('bill-notes').value.trim();
+  const nameErr=!name,amtErr=isNaN(amount)||amount<=0;
+  const dueErr=isNaN(dueday)||dueday<1||dueday>31,apErr=autopay&&!autopayAccount;
+  setError('bill-name',nameErr); setError('bill-amount',amtErr);
+  setError('bill-dueday',dueErr); setError('bill-autopay-account',apErr);
+  if(nameErr||amtErr||dueErr||apErr) return;
+  state.bills.push({name,amount,frequency,dueday,category,autopay,autopayAccount,notes});
+  ['bill-name','bill-amount','bill-dueday','bill-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('bill-autopay').checked=false;
+  document.getElementById('autopay-acc-section').style.display='none';
+  save(); initSettingsUI();
+    applyTheme(state.theme||'ramen');
+    renderAll(); closeModal('add-bill-modal');
+}
+function deleteBill(i) {
+  if(!confirm("Delete this bill? It still exists in real life though. Just so you know.")) return;
+  state.bills.splice(i,1); save(); initSettingsUI();
+    applyTheme(state.theme||'ramen');
+    renderAll();
+}
+function openEditBill(i) {
+  state.editBillId=i;
+  const b=state.bills[i];
+  document.getElementById('ebill-name').value=b.name;
+  document.getElementById('ebill-amount').value=b.amount;
+  document.getElementById('ebill-frequency').value=b.frequency;
+  document.getElementById('ebill-dueday').value=b.dueday||'';
+  document.getElementById('ebill-category').value=b.category;
+  document.getElementById('ebill-autopay').checked=b.autopay;
+  document.getElementById('ebill-notes').value=b.notes||'';
+  const apSec=document.getElementById('eautopay-acc-section');
+  apSec.style.display=b.autopay?'block':'none';
+  if(b.autopay){populateAccountDropdown('ebill-autopay-account');document.getElementById('ebill-autopay-account').value=b.autopayAccount||'';}
+  ['ebill-name','ebill-amount','ebill-dueday','ebill-autopay-account'].forEach(id=>setError(id,false));
+  openModal('edit-bill-modal');
+}
+function saveEditBill() {
+  const name=document.getElementById('ebill-name').value.trim();
+  const amount=parseFloat(document.getElementById('ebill-amount').value);
+  const frequency=document.getElementById('ebill-frequency').value;
+  const dueday=parseInt(document.getElementById('ebill-dueday').value);
+  const category=document.getElementById('ebill-category').value;
+  const autopay=document.getElementById('ebill-autopay').checked;
+  const autopayAccount=document.getElementById('ebill-autopay-account').value;
+  const notes=document.getElementById('ebill-notes').value.trim();
+  const nameErr=!name,amtErr=isNaN(amount)||amount<=0;
+  const dueErr=isNaN(dueday)||dueday<1||dueday>31,apErr=autopay&&!autopayAccount;
+  setError('ebill-name',nameErr); setError('ebill-amount',amtErr);
+  setError('ebill-dueday',dueErr); setError('ebill-autopay-account',apErr);
+  if(nameErr||amtErr||dueErr||apErr) return;
+  state.bills[state.editBillId]={name,amount,frequency,dueday,category,autopay,autopayAccount,notes};
+  save(); initSettingsUI();
+    applyTheme(state.theme||'ramen');
+    renderAll(); closeModal('edit-bill-modal');
+}
+
+// ===== GOALS =====
+function addGoal() {
+  const name=document.getElementById('goal-name').value.trim();
+  const target=parseFloat(document.getElementById('goal-target').value);
+  const saved=parseFloat(document.getElementById('goal-saved').value)||0;
+  const nameErr=!name,targetErr=isNaN(target)||target<=0;
+  setError('goal-name',nameErr); setError('goal-target',targetErr);
+  if(nameErr||targetErr) return;
+  state.goals.push({name,target,saved});
+  ['goal-name','goal-target','goal-saved'].forEach(id=>document.getElementById(id).value='');
+  save(); renderGoals(); closeModal('add-goal-modal');
+}
+function deleteGoal(i) {
+  if(!confirm('Delete this goal? Momentum or excuses. Your call.')) return;
+  state.goals.splice(i,1); save(); renderGoals();
+}
+function openAddToGoal(i) {
+  state.addToGoalId=i;
+  document.getElementById('atg-name-display').value=state.goals[i].name;
+  document.getElementById('atg-amount').value='';
+  setError('atg-amount',false); openModal('add-to-goal-modal');
+}
+function saveAddToGoal() {
+  const amt=parseFloat(document.getElementById('atg-amount').value);
+  const err=isNaN(amt)||amt<=0;
+  setError('atg-amount',err);
+  if(err) return;
+  state.goals[state.addToGoalId].saved=Math.min(state.goals[state.addToGoalId].saved+amt,state.goals[state.addToGoalId].target);
+  save(); renderGoals(); closeModal('add-to-goal-modal');
+}
+
+// ===== BIG BUY =====
+function calcPurchase() {
+  const name=document.getElementById('bp-name').value.trim();
+  const cost=parseFloat(document.getElementById('bp-cost').value);
+  const days=parseInt(document.getElementById('bp-days').value);
+  const manualSave=parseFloat(document.getElementById('bp-daily-save').value);
+  const nameErr=!name,costErr=isNaN(cost)||cost<=0,daysErr=isNaN(days)||days<1;
+  setError('bp-name',nameErr); setError('bp-cost',costErr); setError('bp-days',daysErr);
+  if(nameErr||costErr||daysErr) return;
+  const total=totalBalance(),currentDaily=dailyBudget();
+  const savePerDay=isNaN(manualSave)?cost/days:manualSave;
+  const newDaily=currentDaily-savePerDay;
+  const canAfford=total>=cost;
+  const daysNeeded=savePerDay>0?Math.ceil(cost/savePerDay):Infinity;
+  document.getElementById('bp-item-title').textContent='🛒 '+name;
+  document.getElementById('bp-r-cost').textContent=fmt(cost);
+  document.getElementById('bp-r-days').textContent=days+' days';
+  document.getElementById('bp-r-perday').textContent=fmt(savePerDay)+'/day';
+  const nd=document.getElementById('bp-r-newdaily');
+  nd.textContent=newDaily>0?fmt(newDaily)+'/day':'⚠️ Goes negative.';
+  nd.style.color=newDaily>0?'var(--lime)':'var(--ember)';
+  const af=document.getElementById('bp-r-afford');
+  if(canAfford){af.textContent='✅ Yes';af.style.color='var(--lime)';}
+  else{af.textContent='❌ Short by '+fmt(cost-total);af.style.color='var(--ember)';}
+  let tip='';
+  if(!canAfford) tip=`<strong>📌 Financially denied.</strong> You're ${fmt(cost-total)} short. Set aside 50% of your daily budget and you'll close that gap in <strong>${Math.ceil((cost-total)/(currentDaily*0.5))} days</strong>. Delayed gratification. Look it up.`;
+  else if(newDaily<5) tip=`<strong>😬 Emotionally approved. Barely financially cleared.</strong> You'd have ${fmt(newDaily)}/day left. That's surviving on prayers. Push the save window out.`;
+  else tip=`<strong>✅ Cleared.</strong> Stack ${fmt(savePerDay)}/day and you'll have it in ${daysNeeded} days. New daily budget: ${fmt(newDaily)}. Doable. Don't blow it on something else before then.`;
+  document.getElementById('bp-tip').innerHTML=tip;
+  document.getElementById('bp-result').style.display='block';
+}
+
+// ===== MODALS =====
+function openModal(id) {
+  if(id==='add-bill-modal') populateAccountDropdown('bill-autopay-account');
+  if(id==='add-debt-modal') populateAccountDropdown('debt-account');
+  if(id==='edit-debt-modal') populateAccountDropdown('edebt-account');
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});
+});
+
+// ===== DEBT PAYOFF =====
+function calcPayoff(balance,apr,monthlyPayment) {
+  if(monthlyPayment<=0||balance<=0) return {months:Infinity,totalInterest:Infinity,totalPaid:Infinity};
+  const monthlyRate=apr/100/12;
+  if(monthlyRate===0){const months=Math.ceil(balance/monthlyPayment);return{months,totalInterest:0,totalPaid:monthlyPayment*months};}
+  const monthlyInterest=balance*monthlyRate;
+  if(monthlyPayment<=monthlyInterest) return{months:Infinity,totalInterest:Infinity,totalPaid:Infinity};
+  const months=Math.ceil(-Math.log(1-(monthlyRate*balance)/monthlyPayment)/Math.log(1+monthlyRate));
+  const totalPaid=monthlyPayment*months;
+  const totalInterest=totalPaid-balance;
+  return{months,totalInterest:Math.max(totalInterest,0),totalPaid};
+}
+function getPayoffDate(months) {
+  if(!isFinite(months)) return 'Never at this rate';
+  const d=new Date(); d.setMonth(d.getMonth()+months);
+  return d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+}
+function buildBalanceCurve(balance,apr,monthlyPayment,maxMonths) {
+  const monthlyRate=apr/100/12;
+  const data=[balance];
+  let b=balance;
+  for(let i=0;i<maxMonths;i++){
+    const interest=b*monthlyRate;
+    b=Math.max(b+interest-monthlyPayment,0);
+    data.push(b);
+    if(b===0) break;
+  }
+  return data;
+}
+const debtCharts={};
+function drawDebtChart(canvasId,balance,apr,minPay,extraPay,debtIdx) {
+  const canvas=document.getElementById(canvasId);
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const minData=buildBalanceCurve(balance,apr,minPay,600);
+  const extraData=buildBalanceCurve(balance,apr,minPay+extraPay,600);
+  const maxLen=Math.max(minData.length,extraData.length);
+  if(debtCharts[debtIdx]) debtCharts[debtIdx]=null;
+  const W=canvas.offsetWidth||320, H=180;
+  canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+  const pad={top:14,right:14,bottom:32,left:52};
+  const cw=W-pad.left-pad.right, ch=H-pad.top-pad.bottom;
+  const maxVal=balance;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(240,236,216,0.07)'; ctx.lineWidth=1;
+  for(let g=0;g<=4;g++){
+    const y=pad.top+(ch/4)*g;
+    ctx.beginPath(); ctx.moveTo(pad.left,y); ctx.lineTo(W-pad.right,y); ctx.stroke();
+    ctx.fillStyle='rgba(240,236,216,0.3)'; ctx.font='10px DM Mono,monospace'; ctx.textAlign='right';
+    const val=maxVal*(1-g/4);
+    ctx.fillText('$'+(val>=1000?(val/1000).toFixed(1)+'k':val.toFixed(0)),pad.left-4,y+4);
+  }
+  function drawLine(data,color){
+    if(!data||data.length<2) return;
+    const xStep=cw/(maxLen-1);
+    ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.setLineDash([]);
+    data.forEach((val,i)=>{
+      const x=pad.left+i*xStep, y=pad.top+ch*(1-Math.min(val/maxVal,1));
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  }
+  if(extraPay>0){
+    const xStep=cw/(maxLen-1);
+    ctx.beginPath(); ctx.fillStyle='rgba(200,224,107,0.07)';
+    extraData.forEach((val,i)=>{
+      const x=pad.left+i*xStep, y=pad.top+ch*(1-Math.min(val/maxVal,1));
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    const lastX=pad.left+(extraData.length-1)*xStep;
+    ctx.lineTo(lastX,pad.top+ch); ctx.lineTo(pad.left,pad.top+ch); ctx.closePath(); ctx.fill();
+  }
+  drawLine(minData,'#E8644A');
+  if(extraPay>0) drawLine(extraData,'#C8E06B');
+  ctx.fillStyle='rgba(240,236,216,0.3)'; ctx.font='10px DM Sans,sans-serif'; ctx.textAlign='center';
+  const xStep=cw/(maxLen-1);
+  for(let i=0;i<maxLen;i+=12){
+    const x=pad.left+i*xStep;
+    ctx.fillText(i===0?'Now':`Yr ${i/12}`,x,H-pad.bottom+14);
+  }
+  ctx.font='10px DM Sans,sans-serif'; ctx.textAlign='left';
+  ctx.fillStyle='#E8644A'; ctx.fillRect(pad.left,4,18,3);
+  ctx.fillStyle='rgba(240,236,216,0.6)'; ctx.fillText('Min Only',pad.left+22,10);
+  if(extraPay>0){
+    ctx.fillStyle='#C8E06B'; ctx.fillRect(pad.left+82,4,18,3);
+    ctx.fillStyle='rgba(240,236,216,0.6)'; ctx.fillText('With Extra',pad.left+104,10);
+  }
+}
+function renderDebtSimulator(idx) {
+  const d=state.debts[idx];
+  const el=document.getElementById('sim-'+idx);
+  if(!el) return;
+  const sliderEl=el.querySelector('.extra-slider');
+  const extraPay=sliderEl?parseFloat(sliderEl.value):0;
+  const minResult=calcPayoff(d.balance,d.apr,d.minpay);
+  const extraResult=calcPayoff(d.balance,d.apr,d.minpay+extraPay);
+  const interestSaved=isFinite(minResult.totalInterest)&&isFinite(extraResult.totalInterest)?Math.max(minResult.totalInterest-extraResult.totalInterest,0):0;
+  const monthsSaved=isFinite(minResult.months)&&isFinite(extraResult.months)?Math.max(minResult.months-extraResult.months,0):0;
+  const daily=dailyBudget();
+  const budgetWarning=extraPay>0&&(extraPay/30)>daily*0.5?`⚠️ Paying extra ${fmt(extraPay)}/month = ~${fmt(extraPay/30)}/day out of your budget. That's over half your daily spend. Make sure this is actually sustainable.`:'';
+  el.innerHTML=`
+    <div class="sim-2col">
+      <div class="sim-stat"><div class="sim-stat-label">Monthly Rate</div><div class="sim-stat-value ember">${(d.apr/12).toFixed(2)}%</div></div>
+      <div class="sim-stat"><div class="sim-stat-label">Interest/Month Now</div><div class="sim-stat-value ember">${fmt(d.balance*d.apr/100/12)}</div></div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-head">
+        <span class="slider-lbl">Extra Monthly Payment</span>
+        <span class="slider-val" id="slider-val-${idx}">+${fmt(extraPay)}/mo</span>
+      </div>
+      <input type="range" class="extra-slider" min="0" max="${Math.max(d.minpay*10,500)}" step="5" value="${extraPay}" oninput="onSliderChange(${idx},this.value)">
+      <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text-3);margin-top:4px">
+        <span>$0 extra (min only)</span><span>${fmt(Math.max(d.minpay*10,500))} extra</span>
+      </div>
+    </div>
+    ${interestSaved>0||monthsSaved>0?`<div class="savings-callout">
+      <div class="savings-callout-lbl">Interest you'd save</div>
+      <div class="savings-callout-val">${fmt(interestSaved)}</div>
+      <div class="savings-callout-sub">${monthsSaved} month${monthsSaved!==1?'s':''} sooner · paid off ${getPayoffDate(extraResult.months)}</div>
+    </div>`:''}
+    <div class="compare-grid">
+      <div class="compare-card min">
+        <div class="compare-card-title">🐌 Min Only</div>
+        <div class="compare-row"><span class="compare-lbl">Payment</span><span class="compare-val ember">${fmt(d.minpay)}/mo</span></div>
+        <div class="compare-row"><span class="compare-lbl">Payoff</span><span class="compare-val">${isFinite(minResult.months)?minResult.months+' mo':'∞ Never'}</span></div>
+        <div class="compare-row"><span class="compare-lbl">Interest</span><span class="compare-val ember">${isFinite(minResult.totalInterest)?fmt(minResult.totalInterest):'∞'}</span></div>
+        <div class="compare-row"><span class="compare-lbl">Total Cost</span><span class="compare-val ember">${isFinite(minResult.totalPaid)?fmt(minResult.totalPaid):'∞'}</span></div>
+        <div class="payoff-date-line">${isFinite(minResult.months)?'📅 '+getPayoffDate(minResult.months):"😬 Banks love this plan. You shouldn't."}</div>
+      </div>
+      <div class="compare-card extra">
+        <div class="compare-card-title">🚀 With Extra</div>
+        <div class="compare-row"><span class="compare-lbl">Payment</span><span class="compare-val lime">${fmt(d.minpay+extraPay)}/mo</span></div>
+        <div class="compare-row"><span class="compare-lbl">Payoff</span><span class="compare-val">${isFinite(extraResult.months)?extraResult.months+' mo':'∞ Need more'}</span></div>
+        <div class="compare-row"><span class="compare-lbl">Interest</span><span class="compare-val lime">${isFinite(extraResult.totalInterest)?fmt(extraResult.totalInterest):'∞'}</span></div>
+        <div class="compare-row"><span class="compare-lbl">Total Cost</span><span class="compare-val lime">${isFinite(extraResult.totalPaid)?fmt(extraResult.totalPaid):'∞'}</span></div>
+        <div class="payoff-date-line">${isFinite(extraResult.months)?'📅 '+getPayoffDate(extraResult.months):'😬 Slide it higher'}</div>
+      </div>
+    </div>
+    ${budgetWarning?`<div class="budget-alert">${budgetWarning}</div>`:''}
+    <div class="chart-block">
+      <div class="chart-lbl">Balance Over Time — Min Only vs Paying More. The gap is money leaving your pocket.</div>
+      <canvas id="chart-${idx}"></canvas>
+    </div>`;
+  requestAnimationFrame(()=>{ drawDebtChart('chart-'+idx,d.balance,d.apr,d.minpay,extraPay,idx); });
+}
+function onSliderChange(idx,val) {
+  const el=document.getElementById('slider-val-'+idx);
+  if(el) el.textContent='+'+fmt(parseFloat(val))+'/mo';
+  renderDebtSimulator(idx);
+}
+function toggleDebtItem(idx) {
+  const item=document.getElementById('debt-item-'+idx);
+  if(!item) return;
+  const wasExpanded=item.classList.contains('expanded');
+  document.querySelectorAll('.debt-item').forEach(el=>el.classList.remove('expanded'));
+  if(!wasExpanded){ item.classList.add('expanded'); renderDebtSimulator(idx); }
+}
+function renderDebt() {
+  const list=document.getElementById('debt-list');
+  const totalOwed=state.debts.reduce((s,d)=>s+(parseFloat(d.balance)||0),0);
+  const totalMin=state.debts.reduce((s,d)=>s+(parseFloat(d.minpay)||0),0);
+  const totalInterest=state.debts.reduce((s,d)=>{
+    const r=calcPayoff(d.balance,d.apr,d.minpay);
+    return s+(isFinite(r.totalInterest)?r.totalInterest:0);
+  },0);
+  document.getElementById('debt-total-owed').textContent=fmt(totalOwed);
+  document.getElementById('debt-min-payments').textContent=fmt(totalMin);
+  document.getElementById('debt-total-interest').textContent=isFinite(totalInterest)?fmt(totalInterest):'∞';
+  if(!state.debts.length){
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">💳</div><div class="empty-text">No debts tracked. Debt-free is the goal. But pretending it doesn\'t exist isn\'t the same thing.</div></div>';
+    return;
+  }
+  list.innerHTML=state.debts.map((d,i)=>{
+    const icon=debtIcons[d.type]||'📦';
+    const minResult=calcPayoff(d.balance,d.apr,d.minpay);
+    const accName=d.account!==''&&state.accounts[parseInt(d.account)]?state.accounts[parseInt(d.account)].name:null;
+    const isInf=!isFinite(minResult.months);
+    return `<div class="debt-item" id="debt-item-${i}">
+      <div class="debt-hd" onclick="toggleDebtItem(${i})">
+        <div class="debt-icon">${icon}</div>
+        <div class="debt-info">
+          <div class="debt-name">${esc(d.name)}</div>
+          <div class="debt-meta">${d.apr}% APR · ${fmt(d.minpay)}/mo min · ${isInf?"⚠️ Min doesn't cover interest":minResult.months+' mo to payoff'}${accName?' · '+accName:''}</div>
+        </div>
+        <div class="debt-balance">${fmt(d.balance)}</div>
+        <div class="item-actions" onclick="event.stopPropagation()">
+          <button class="icon-btn" onclick="openEditDebt(${i})">✏️</button>
+          <button class="icon-btn del" onclick="deleteDebt(${i})">🗑</button>
+        </div>
+        <div class="debt-chevron">▼</div>
+      </div>
+      <div class="debt-sim" id="sim-${i}">
+        <div style="text-align:center;color:var(--text-3);padding:16px;font-size:0.83rem">Tap to see what this debt is costing you.</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function addDebt() {
+  const name=document.getElementById('debt-name').value.trim();
+  const type=document.getElementById('debt-type').value;
+  const balance=parseFloat(document.getElementById('debt-balance').value);
+  const apr=parseFloat(document.getElementById('debt-apr').value);
+  const minpay=parseFloat(document.getElementById('debt-minpay').value);
+  const account=document.getElementById('debt-account').value;
+  const nameErr=!name,balErr=isNaN(balance)||balance<0;
+  const aprErr=isNaN(apr)||apr<0||apr>100,payErr=isNaN(minpay)||minpay<=0;
+  setError('debt-name',nameErr); setError('debt-balance',balErr);
+  setError('debt-apr',aprErr); setError('debt-minpay',payErr);
+  if(nameErr||balErr||aprErr||payErr) return;
+  state.debts.push({name,type,balance,apr,minpay,account});
+  ['debt-name','debt-balance','debt-apr','debt-minpay'].forEach(id=>document.getElementById(id).value='');
+  save(); renderDebt(); closeModal('add-debt-modal');
+}
+function deleteDebt(i) {
+  if(!confirm("Delete this debt? It still exists in real life. Deleting it here doesn't delete it out there.")) return;
+  state.debts.splice(i,1); save(); renderDebt();
+}
+function openEditDebt(i) {
+  state.editDebtId=i;
+  const d=state.debts[i];
+  document.getElementById('edebt-name').value=d.name;
+  document.getElementById('edebt-type').value=d.type;
+  document.getElementById('edebt-balance').value=d.balance;
+  document.getElementById('edebt-apr').value=d.apr;
+  document.getElementById('edebt-minpay').value=d.minpay;
+  populateAccountDropdown('edebt-account');
+  document.getElementById('edebt-account').value=d.account||'';
+  ['edebt-name','edebt-balance','edebt-apr','edebt-minpay'].forEach(id=>setError(id,false));
+  openModal('edit-debt-modal');
+}
+function saveEditDebt() {
+  const name=document.getElementById('edebt-name').value.trim();
+  const type=document.getElementById('edebt-type').value;
+  const balance=parseFloat(document.getElementById('edebt-balance').value);
+  const apr=parseFloat(document.getElementById('edebt-apr').value);
+  const minpay=parseFloat(document.getElementById('edebt-minpay').value);
+  const account=document.getElementById('edebt-account').value;
+  const nameErr=!name,balErr=isNaN(balance)||balance<0;
+  const aprErr=isNaN(apr)||apr<0||apr>100,payErr=isNaN(minpay)||minpay<=0;
+  setError('edebt-name',nameErr); setError('edebt-balance',balErr);
+  setError('edebt-apr',aprErr); setError('edebt-minpay',payErr);
+  if(nameErr||balErr||aprErr||payErr) return;
+  state.debts[state.editDebtId]={name,type,balance,apr,minpay,account};
+  save(); renderDebt(); closeModal('edit-debt-modal');
+}
+
+load();
+initTheme();
+applyTheme(state.theme||'ramen');
+</script>
+</body>
+</html>
